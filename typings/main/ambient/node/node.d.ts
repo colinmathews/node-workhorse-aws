@@ -1,5 +1,5 @@
 // Compiled using typings@0.6.8
-// Source: https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/366b936e62a6244a15f011e0ee0559b903d1dd65/node/node.d.ts
+// Source: https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/263705d313346e093d95cb62cef6fed848e46978/node/node.d.ts
 // Type definitions for Node.js v4.x
 // Project: http://nodejs.org/
 // Definitions by: Microsoft TypeScript <http://typescriptlang.org>, DefinitelyTyped <https://github.com/borisyankov/DefinitelyTyped>
@@ -504,7 +504,7 @@ declare module "http" {
         statusCode: number;
         statusMessage: string;
         headersSent: boolean;
-        setHeader(name: string, value: string): void;
+        setHeader(name: string, value: string | string[]): void;
         sendDate: boolean;
         getHeader(name: string): string;
         removeHeader(name: string): void;

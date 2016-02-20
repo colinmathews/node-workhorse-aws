@@ -8,7 +8,8 @@
     "source-map-support": "^0.4.0",
     "tsc": "^1.20150623.0",
     "typescript": "^1.7.5",
-    "typings": "^0.6.8"
+    "typings": "^0.6.8",
+    "node-workhorse": "git://github.com/colinmathews/node-workhorse.git#cb235d757971f115707e0eaaa2263685a8187055"
   },
   "main": "dist/index.js",
   "devDependencies": {
