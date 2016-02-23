@@ -9,7 +9,7 @@
     "tsc": "^1.20150623.0",
     "typescript": "^1.7.5",
     "typings": "^0.6.8",
-    "node-workhorse": "git://github.com/colinmathews/node-workhorse.git#cb235d757971f115707e0eaaa2263685a8187055"
+    "node-workhorse": "git://github.com/colinmathews/node-workhorse.git#rework-work-loading"
   },
   "main": "dist/index.js",
   "devDependencies": {
@@ -18,8 +18,10 @@
   },
   "scripts": {
     "preinstall": "npm install tsc",
-    "postinstall": "npm run typings install && npm run tsc",
+    "postinstall": "npm run clean && npm run typings install && npm run tsc",
     "tsc": "tsc",
+    "clean": "rm -rf dist",
+    "clean-tests": "rm -rf dist/test",
     "tsc:w": "tsc -w",
     "pretest": "npm run tsc",
     "test": "mocha",

@@ -10,6 +10,7 @@ import S3StateManager from '../lib/services/s3-state-manager';
 
 describe('Calculator', () => {
   let subject : Workhorse;
+  let baseWorkPath = `${__dirname}/test-work/`;
 
   before(function () {
     let jsonPath = path.resolve(__dirname, '../../aws-config.json');
@@ -20,7 +21,6 @@ describe('Calculator', () => {
     let rawConfig = JSON.parse(fs.readFileSync(jsonPath));
     let s3Config = new S3Config(rawConfig);
     subject = new Workhorse(new Config({
-      workFilePath: `${__dirname}/test-work`,
       stateManager: new S3StateManager(s3Config)
     }));
   });
@@ -28,7 +28,7 @@ describe('Calculator', () => {
   describe('#run', () => {
     it('should add two numbers', function(){
       this.timeout(10000);
-      return subject.run('calculator', { x: 1, y: 2 })
+      return subject.run(`${baseWorkPath}calculator`, { x: 1, y: 2 })
       .then((work: Work) => {
         assert.isNotNull(work.result);
         assert.equal(work.result.result, 3);
@@ -37,7 +37,7 @@ describe('Calculator', () => {
 
     it('should spawn child work', function(){
       this.timeout(10000);
-      return subject.run('calculator', { x: 1, y: 2, twice: true })
+      return subject.run(`${baseWorkPath}calculator`, { x: 1, y: 2, twice: true })
       .then((work: Work) => {
         assert.isNotNull(work.result);
         assert.equal(work.result.result, 3);
@@ -46,7 +46,7 @@ describe('Calculator', () => {
 
     it('should fail if numbers not used', function(){
       this.timeout(10000);
-      return subject.run('calculator', { x: 'error', y: 2 })
+      return subject.run(`${baseWorkPath}calculator`, { x: 'error', y: 2 })
       .then((work: Work) => {
         assert.isNotNull(work.result);
         assert.isNull(work.result.result);
