@@ -1,4 +1,4 @@
-export default class S3Config {
+export default class AWSConfig {
   accessKeyId:string;
   secretAccessKey:string;
   region:string;

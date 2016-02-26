@@ -1,8 +1,8 @@
 import { Promise } from 'es6-promise';
-import S3Config from '../models/s3-config';
-import { S3, config as awsConfig, Credentials } from 'aws-sdk';
+import AWSConfig from '../models/aws-config';
+import { S3, Credentials } from 'aws-sdk';
 
-export function createS3(config:S3Config):S3 {
+export function createS3(config:AWSConfig):S3 {
   return new S3({
     credentials: new Credentials(config.accessKeyId, config.secretAccessKey),
     region: config.region,
@@ -10,7 +10,7 @@ export function createS3(config:S3Config):S3 {
   });
 }
 
-export function download(config:S3Config, s3:S3, key:string): Promise<string> {
+export function download(config:AWSConfig, s3:S3, key:string): Promise<string> {
   return new Promise((ok, fail) => {
     let args = {
       Bucket: config.bucket,
@@ -29,7 +29,7 @@ export function download(config:S3Config, s3:S3, key:string): Promise<string> {
   });
 }
 
-export function upload(config:S3Config, s3:S3, key:string, data:string): Promise<any> {
+export function upload(config:AWSConfig, s3:S3, key:string, data:string): Promise<any> {
   return new Promise((ok, fail) => {
     let args = {
       Bucket: config.bucket,
@@ -47,7 +47,7 @@ export function upload(config:S3Config, s3:S3, key:string, data:string): Promise
   });
 }
 
-export function deleteFile(config:S3Config, s3:S3, key:string): Promise<any> {
+export function deleteFile(config:AWSConfig, s3:S3, key:string): Promise<any> {
   return new Promise((ok, fail) => {
     let args = {
       Bucket: config.bucket,

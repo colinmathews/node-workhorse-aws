@@ -6,31 +6,31 @@ let path = require('path');
 let fs = require('fs');
 import { assert } from 'chai';
 import { Workhorse, Config, Work, LogLevel } from 'node-workhorse';
-import S3Config from '../lib/models/s3-config';
+import AWSConfig from '../lib/models/aws-config';
 import S3StateManager from '../lib/services/s3-state-manager';
 import S3Logger from '../lib/services/s3-logger';
 import { S3 } from 'aws-sdk';
-import { createS3, download, upload, deleteFile } from'../lib/util/s3-util'
+import { createS3, download, upload, deleteFile } from'../lib/util/aws-util'
 
 describe('Calculator', () => {
   let subject : Workhorse;
   let baseWorkPath = `${__dirname}/test-work/`;
 
-  function getS3Config() {
+  function getAWSConfig() {
     let jsonPath = path.resolve(__dirname, '../../aws-config.json');
     if (!fs.existsSync(jsonPath)) {
       throw new Error("Please create a 'aws-config.json' file in the root directory of this project to test with AWS resources")
     }
 
     let rawConfig = JSON.parse(fs.readFileSync(jsonPath));
-    return new S3Config(rawConfig);
+    return new AWSConfig(rawConfig);
   }
 
   function downloadLogs(workID) {
-    let s3Config = getS3Config();
-    let s3 = createS3(s3Config);
-    let key = `${s3Config.s3LoggerKeyPrefix}work/${workID}.txt`;
-    return download(s3Config, s3, key)
+    let awsConfig = getAWSConfig();
+    let s3 = createS3(awsConfig);
+    let key = `${awsConfig.s3LoggerKeyPrefix}work/${workID}.txt`;
+    return download(awsConfig, s3, key)
     .then((raw) => {
       if (!raw) {
         return null;
@@ -40,21 +40,20 @@ describe('Calculator', () => {
   }
 
   function keyExists(keySuffix) {
-    let s3Config = getS3Config();
-    let s3 = createS3(s3Config);
-    let key = `${s3Config.s3LoggerKeyPrefix}work/${keySuffix}`;
-    return download(s3Config, s3, key)
+    let awsConfig = getAWSConfig();
+    let s3 = createS3(awsConfig);
+    let key = `${awsConfig.s3LoggerKeyPrefix}work/${keySuffix}`;
+    return download(awsConfig, s3, key)
     .then((raw) => {
       return raw !== null;
     });
   }
 
   before(function () {
-    let s3Config = getS3Config();
-    let now = <any>new Date();
+    let awsConfig = getAWSConfig();
     subject = new Workhorse(new Config({
-      stateManager: new S3StateManager(s3Config),
-      logger: new S3Logger(s3Config)
+      stateManager: new S3StateManager(awsConfig),
+      logger: new S3Logger(awsConfig)
     }));
   });
 

@@ -1,8 +1,8 @@
 import { Promise } from 'es6-promise';
 import { Work, Workhorse } from 'node-workhorse';
-import S3Config from '../models/s3-config';
+import AWSConfig from '../models/aws-config';
 import { S3 } from 'aws-sdk';
-import { createS3, download, upload, deleteFile } from'./s3-util'
+import { createS3, download, upload, deleteFile } from'./aws-util'
 import padLeft from './pad-left';
 import flatten from './flatten';
 
@@ -21,7 +21,7 @@ function addToLogKeys(list:any[], deepWork, s3KeyPrefix:string) {
   });
 }
 
-function downloadLogs(config:S3Config, s3:S3, list:any[]): Promise<any[]> {
+function downloadLogs(config:AWSConfig, s3:S3, list:any[]): Promise<any[]> {
   let promises = list.reduce((result, row) => {
     let inside, outside;
     let promise = download(config, s3, row.inside)
@@ -46,7 +46,7 @@ function downloadLogs(config:S3Config, s3:S3, list:any[]): Promise<any[]> {
   return Promise.all(promises);
 }
 
-function consolidate(config:S3Config, s3:S3, list:any[]): Promise<any> {
+function consolidate(config:AWSConfig, s3:S3, list:any[]): Promise<any> {
   let promises = list.reduce((result, row) => {
     if (!row.work.parentID) {
       let logs = produceLogs(list, row, 0);
@@ -61,7 +61,7 @@ function consolidate(config:S3Config, s3:S3, list:any[]): Promise<any> {
   })
 }
 
-function cleanUpLogs(config:S3Config, s3:S3, row, logs) {
+function cleanUpLogs(config:AWSConfig, s3:S3, row, logs) {
   return upload(config, s3, row.inside, logs.join('\n'))
   .then(() => {
     if (row.outsideExists) {
@@ -70,7 +70,7 @@ function cleanUpLogs(config:S3Config, s3:S3, row, logs) {
   });
 }
 
-function deleteLogs(config:S3Config, s3:S3, row) {
+function deleteLogs(config:AWSConfig, s3:S3, row) {
   if (row.insideExists) {
     return deleteFile(config, s3, row.inside)
     .then(() => {
@@ -87,7 +87,7 @@ function deleteLogs(config:S3Config, s3:S3, row) {
   }
 }
 
-function deleteChildrenLogs(config:S3Config, s3:S3, list:any[]) {
+function deleteChildrenLogs(config:AWSConfig, s3:S3, list:any[]) {
   let promises = list.reduce((result, row) => {
     if (row.work.parentID) {
       let promise = deleteLogs(config, s3, row);
@@ -134,7 +134,7 @@ export function produceLogs(list:any[], row:any, indent:number = 0, spacesPerInd
   return logs.concat(flatten(childLogs));
 };
 
-export default function(config: S3Config, workhorse:Workhorse, work:Work, s3KeyPrefix:string): Promise<any> {
+export default function(config: AWSConfig, workhorse:Workhorse, work:Work, s3KeyPrefix:string): Promise<any> {
   let list:any[] = [];
   let s3 = createS3(config);
   return work.prettyPrint(workhorse)

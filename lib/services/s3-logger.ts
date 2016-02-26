@@ -1,7 +1,7 @@
 require('date-format-lite');
 import { Promise } from 'es6-promise';
 import { Work, Logger, Workhorse, LogLevel, ConsoleLogger } from 'node-workhorse';
-import S3Config from '../models/s3-config';
+import AWSConfig from '../models/aws-config';
 import { S3Config as LoggerS3Config, S3Append } from 's3-append';
 import consolidateLogs from '../util/consolidate-logs';
 
@@ -17,7 +17,7 @@ export default class S3Logger implements Logger {
   private insideWorkToLoggerMap = {};
   private endingWorkPromises:Promise<any>[] = [];
 
-  constructor(public originalConfig: S3Config) {
+  constructor(public originalConfig:AWSConfig) {
     this.s3Config = new LoggerS3Config(originalConfig);
     let now = new Date();
     this.uniqueID = (<any>now).format('YYYY-MM-DD hh:mm:ss.SS');

@@ -1,6 +1,6 @@
 import { Promise } from 'es6-promise';
 import { Work, StateManager, Workhorse} from 'node-workhorse';
-import S3Config from '../models/s3-config';
+import AWSConfig from '../models/aws-config';
 import { S3, config as awsConfig, Credentials } from 'aws-sdk';
 
 export default class S3StateManager implements StateManager {
@@ -8,7 +8,7 @@ export default class S3StateManager implements StateManager {
   static stateMap = null;
   static nextID: number;
 
-  constructor(public config: S3Config) {
+  constructor(public config:AWSConfig) {
     awsConfig.update({
       credentials: new Credentials(config.accessKeyId, config.secretAccessKey),
       region: config.region
