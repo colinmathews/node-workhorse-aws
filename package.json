@@ -5,11 +5,12 @@
   "dependencies": {
     "aws-sdk": "^2.2.36",
     "es6-promise": "^3.1.2",
+    "node-workhorse": "git://github.com/colinmathews/node-workhorse.git#master",
+    "s3-append": "^1.0.1",
     "source-map-support": "^0.4.0",
     "tsc": "^1.20150623.0",
     "typescript": "^1.7.5",
-    "typings": "^0.6.8",
-    "node-workhorse": "git://github.com/colinmathews/node-workhorse.git#rework-work-loading"
+    "typings": "^0.6.8"
   },
   "main": "dist/index.js",
   "devDependencies": {
@@ -23,7 +24,7 @@
     "clean": "rm -rf dist",
     "clean-tests": "rm -rf dist/test",
     "tsc:w": "tsc -w",
-    "pretest": "npm run tsc",
+    "pretest": "npm run clean && npm run tsc",
     "test": "mocha",
     "typings": "typings"
   },

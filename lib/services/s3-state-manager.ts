@@ -1,9 +1,7 @@
 import { Promise } from 'es6-promise';
 import { Work, StateManager, Workhorse} from 'node-workhorse';
 import S3Config from '../models/s3-config';
-import { S3, config as awsConfig, Config, Credentials } from 'aws-sdk';
-
-const keySuffix = '2016-02-18';
+import { S3, config as awsConfig, Credentials } from 'aws-sdk';
 
 export default class S3StateManager implements StateManager {
   workhorse: Workhorse;
@@ -67,7 +65,7 @@ export default class S3StateManager implements StateManager {
 
   private writeDB(): Promise<any> {
     let s3 = new S3();
-    let key = `${this.config.s3StateKeyPrefix}${keySuffix}.json`;
+    let key = `${this.config.s3StateKeyPrefix}.json`;
     let json = JSON.stringify(S3StateManager.stateMap, null, 2);
     let args = {
       Bucket: this.config.bucket,
@@ -94,7 +92,7 @@ export default class S3StateManager implements StateManager {
     }
 
     let s3 = new S3();
-    let key = `${this.config.s3StateKeyPrefix}${keySuffix}.json`;
+    let key = `${this.config.s3StateKeyPrefix}.json`;
     let args = {
       Bucket: this.config.bucket,
       Key: decodeURIComponent(key.replace(/\+/g, " "))
@@ -108,7 +106,7 @@ export default class S3StateManager implements StateManager {
             this.workhorse.logger.log('State database not found, starting fresh');
             S3StateManager.stateMap = {};
             S3StateManager.nextID = S3StateManager.calculateNextID();
-            ok(S3StateManager.stateMap);
+            return ok(S3StateManager.stateMap);
           }
           return fail(err);
         }
@@ -129,7 +127,7 @@ export default class S3StateManager implements StateManager {
     }
     return Object.keys(state).reduce((result, key) => {
       let id = parseInt(key, 10);
-      if (!isNaN(id) && id > result) {
+      if (!isNaN(id) && id >= result) {
         return id + 1;
       }
       return result;

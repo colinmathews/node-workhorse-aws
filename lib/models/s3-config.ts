@@ -4,6 +4,7 @@ export default class S3Config {
   region:string;
   bucket:string;
   s3StateKeyPrefix: string;
+  s3LoggerKeyPrefix: string;
   
   constructor(props: any = {}) {
     Object.keys(props).forEach((key) => {

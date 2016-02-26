@@ -14,8 +14,10 @@ export default class Calculator implements Runnable {
       }
       let children;
       if (input.twice) {
+        this.workhorse.logger.logInsideWork(work, 'Creating child work');
         children = this.createChildWork(input);
       }
+      this.workhorse.logger.logInsideWork(work, 'Performing addition');
       ok({
         result: input.x + input.y,
         childWork: children
