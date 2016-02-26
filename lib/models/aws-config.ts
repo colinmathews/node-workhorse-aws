@@ -5,6 +5,7 @@ export default class AWSConfig {
   bucket:string;
   s3StateKeyPrefix: string;
   s3LoggerKeyPrefix: string;
+  dynamoDBWorkTable: string;
   
   constructor(props: any = {}) {
     Object.keys(props).forEach((key) => {

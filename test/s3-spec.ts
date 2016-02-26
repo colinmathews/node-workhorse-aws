@@ -12,7 +12,7 @@ import S3Logger from '../lib/services/s3-logger';
 import { S3 } from 'aws-sdk';
 import { createS3, download, upload, deleteFile } from'../lib/util/aws-util'
 
-describe('Calculator', () => {
+describe('S3', () => {
   let subject : Workhorse;
   let baseWorkPath = `${__dirname}/test-work/`;
 
