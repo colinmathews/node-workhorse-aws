@@ -137,7 +137,7 @@ export function produceLogs(list:any[], row:any, indent:number = 0, spacesPerInd
 export default function(config: AWSConfig, workhorse:Workhorse, work:Work, s3KeyPrefix:string): Promise<any> {
   let list:any[] = [];
   let s3 = createS3(config);
-  return work.prettyPrint(workhorse)
+  return work.deep(workhorse)
   .then((deepWork) => {
     addToLogKeys(list, deepWork, s3KeyPrefix);
     return downloadLogs(config, s3, list)
