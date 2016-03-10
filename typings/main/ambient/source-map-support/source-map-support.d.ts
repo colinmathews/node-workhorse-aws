@@ -1,4 +1,4 @@
-// Compiled using typings@0.6.8
+// Compiled using typings@0.6.10
 // Source: https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/0018f1f6c62f7a899c229ce7522e40b47ca43d95/source-map-support/source-map-support.d.ts
 // Type definitions for source-map-support 0.2.10
 // Project: https://github.com/evanw/source-map-support

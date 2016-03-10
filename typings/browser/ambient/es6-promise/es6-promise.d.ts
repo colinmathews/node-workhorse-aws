@@ -1,4 +1,4 @@
-// Compiled using typings@0.6.8
+// Compiled using typings@0.6.10
 // Source: https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/830e8ebd9ef137d039d5c7ede24a421f08595f83/es6-promise/es6-promise.d.ts
 // Type definitions for es6-promise
 // Project: https://github.com/jakearchibald/ES6-Promise

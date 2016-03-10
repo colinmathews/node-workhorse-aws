@@ -1,4 +1,4 @@
-// Compiled using typings@0.6.8
+// Compiled using typings@0.6.10
 // Source: https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/6c891d4cdd21b9255df21edfb7566945e4b44f05/aws-sdk/aws-sdk.d.ts
 // Type definitions for aws-sdk
 // Project: https://github.com/aws/aws-sdk-js

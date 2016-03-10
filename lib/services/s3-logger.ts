@@ -4,13 +4,13 @@ import { Work, Logger, Workhorse, LogLevel, ConsoleLogger } from 'node-workhorse
 import AWSConfig from '../models/aws-config';
 import { S3Config as LoggerS3Config, S3Append } from 's3-append';
 import consolidateLogs from '../util/consolidate-logs';
+import { createS3, download } from'../util/aws-util'
 
 export default class S3Logger implements Logger {
   workhorse: Workhorse;
   level: LogLevel;
-  uniqueID: string;
-  generalKey: string;
-  workKeyPrefix: string;
+  private generalKey: string;
+  private workKeyPrefix: string;
   private s3Config:LoggerS3Config;
   private logger:S3Append;
   private outsideWorkToLoggerMap = {};
@@ -20,9 +20,11 @@ export default class S3Logger implements Logger {
   constructor(public originalConfig:AWSConfig) {
     this.s3Config = new LoggerS3Config(originalConfig);
     let now = new Date();
-    this.uniqueID = (<any>now).format('YYYY-MM-DD hh:mm:ss.SS');
-    this.generalKey = `${originalConfig.s3LoggerKeyPrefix}${this.uniqueID}.txt`;
-    this.workKeyPrefix = `${originalConfig.s3LoggerKeyPrefix}work/`;
+    let baseKey = originalConfig.s3LoggerKeyPrefix.replace(/\/?$/gi, '');
+    let folder = (<any>now).format('YYYY-MM-DD');
+    let uniqueID = (<any>now).format('hh:mm:ss.SS');
+    this.generalKey = `${baseKey}/${folder}/${uniqueID}.txt`;
+    this.workKeyPrefix = `${baseKey}/${folder}/work/`;
     this.logger = new S3Append(this.s3Config, this.generalKey);
   }
 
@@ -58,14 +60,23 @@ export default class S3Logger implements Logger {
     return Promise.all(promises);
   }
 
+  downloadWorkLogs(workID:string): Promise<string> {
+    let s3 = createS3(this.originalConfig);
+    let key = `${this.workKeyPrefix}${workID}.txt`;
+    return download(this.originalConfig, s3, key);
+  }
+
   private doLog(logger:S3Append, message:string, level?: LogLevel|Error) {
-    let err;
-    [level, err] = ConsoleLogger.parseLevel(level);
-    let formattedMessage = ConsoleLogger.formatMessage(message, level);
+    let [formattedMessage, parsedLevel] = ConsoleLogger.formatMessage(message, level);
 
     // Ignore
-    if (this.level && this.level < level) {
+    if (this.level && this.level < parsedLevel) {
       return;
+    }
+
+    // Keep logs to one-line for simplicity of parsing, etc
+    if (formattedMessage.indexOf('\n') >= 0) {
+      formattedMessage = JSON.stringify(formattedMessage);
     }
     logger.appendWithDate(formattedMessage);
   }

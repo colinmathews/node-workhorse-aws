@@ -35,6 +35,5 @@ node_modules
 # We have sensitive keys here
 aws-config.json
 
-# We use Typescript, not JS
-dist
+deploy-*
 typings

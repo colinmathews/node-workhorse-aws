@@ -29,14 +29,14 @@ export function download(config:AWSConfig, s3:S3, key:string): Promise<string> {
   });
 }
 
-export function upload(config:AWSConfig, s3:S3, key:string, data:string): Promise<any> {
+export function upload(config:AWSConfig, s3:S3, key:string, data:string, contentType:string = 'text/plain', acl:string = 'private'): Promise<any> {
   return new Promise((ok, fail) => {
     let args = {
       Bucket: config.bucket,
       Key: key,
-      ContentType : 'text/plain',
+      ContentType : contentType,
       Body : new Buffer(data),
-      ACL : 'private'
+      ACL : acl
     };
     s3.putObject(args, (err, data) => {
       if (err) {
