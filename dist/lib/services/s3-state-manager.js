@@ -1,4 +1,5 @@
 "use strict";
+require('date-format-lite');
 var es6_promise_1 = require('es6-promise');
 var aws_sdk_1 = require('aws-sdk');
 var S3StateManager = (function () {
@@ -13,28 +14,39 @@ var S3StateManager = (function () {
         var _this = this;
         return this.readDB()
             .then(function () {
-            return _this.saveToMap(work);
-        })
-            .then(function () {
-            return _this.writeDB();
+            if (_this.hasChanged(work)) {
+                _this.saveToMap(work);
+                return _this.writeDB();
+            }
         });
+    };
+    S3StateManager.prototype.hasChanged = function (work) {
+        var previous = S3StateManager.stateMap[work.id];
+        return !previous || JSON.stringify(previous) !== JSON.stringify(work);
     };
     S3StateManager.prototype.saveToMap = function (work) {
         if (!work.id) {
-            work.id = (S3StateManager.nextID++).toString();
+            work.id = S3StateManager.nextID;
+            if (!work.id) {
+                throw new Error("Expected work to have an id");
+            }
+            S3StateManager.nextID = S3StateManager.calculateNextID();
         }
-        S3StateManager.stateMap[work.id] = work;
+        S3StateManager.stateMap[work.id] = work.copy();
     };
     S3StateManager.prototype.saveAll = function (work) {
         var _this = this;
         return this.readDB()
             .then(function () {
-            work.forEach(function (row) {
-                _this.saveToMap(row);
-            });
-        })
-            .then(function () {
-            return _this.writeDB();
+            var anyChanged = work.reduce(function (result, row) {
+                return result || _this.hasChanged(row);
+            }, false);
+            if (anyChanged) {
+                work.forEach(function (row) {
+                    _this.saveToMap(row);
+                });
+                return _this.writeDB();
+            }
         });
     };
     S3StateManager.prototype.load = function (id) {
@@ -107,21 +119,37 @@ var S3StateManager = (function () {
             });
         });
     };
+    S3StateManager.translateNumericIDIntoID = function (id) {
+        var now = new Date();
+        return now.format('YYYY-MM-DD-') + id.toString();
+    };
     S3StateManager.calculateNextID = function () {
-        var nextID = 1;
+        if (S3StateManager.nextNumericID) {
+            S3StateManager.nextNumericID++;
+            return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
+        }
         var state = S3StateManager.stateMap;
         if (!state) {
-            return nextID;
+            S3StateManager.nextNumericID = 1;
         }
-        return Object.keys(state).reduce(function (result, key) {
-            var id = parseInt(key, 10);
-            if (!isNaN(id) && id >= result) {
-                return id + 1;
+        else {
+            var previousID = S3StateManager.nextNumericID;
+            S3StateManager.nextNumericID = Object.keys(state).reduce(function (result, key) {
+                var parsedKey = key.substring('YYYY-MM-DD-'.length);
+                var id = parseInt(parsedKey, 10);
+                if (!isNaN(id) && id >= result) {
+                    return id + 1;
+                }
+                return result;
+            }, 1);
+            if (S3StateManager.nextNumericID === previousID) {
+                throw new Error("Expected id to be incremented: " + S3StateManager.nextNumericID);
             }
-            return result;
-        }, 1);
+        }
+        return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
     };
     S3StateManager.stateMap = null;
+    S3StateManager.nextNumericID = 0;
     return S3StateManager;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });

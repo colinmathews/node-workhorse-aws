@@ -3,11 +3,12 @@ var es6_promise_1 = require('es6-promise');
 var aws_util_1 = require('./aws-util');
 var pad_left_1 = require('./pad-left');
 var flatten_1 = require('./flatten');
+var log_file_naming_1 = require('./log-file-naming');
 function addPossiblelogKeysForWork(s3KeyPrefix, list, work) {
     list.push({
         work: work,
-        inside: "" + s3KeyPrefix + work.id + ".txt",
-        outside: "" + s3KeyPrefix + work.id + "-outside.txt"
+        inside: log_file_naming_1.default(s3KeyPrefix, work.id) + '.txt',
+        outside: log_file_naming_1.default(s3KeyPrefix, work.id) + '-outside.txt',
     });
 }
 function addToLogKeys(list, deepWork, s3KeyPrefix) {

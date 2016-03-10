@@ -1,3 +1,4 @@
+require('date-format-lite'); 
 import { Promise } from 'es6-promise';
 import { Work, WorkResult, StateManager, Workhorse} from 'node-workhorse';
 import AWSConfig from '../models/aws-config';
@@ -22,7 +23,7 @@ export function serializeAsItem(data): any {
   }
   if (data instanceof Array) {
      return { L: data.map((row) => {
-       serializeAsItem(row);
+       return serializeAsItem(row);
      })};
   }
   if (typeof(data) === 'function') {
@@ -92,7 +93,8 @@ export default class DynamoDBStateManager implements StateManager {
   save(work:Work): Promise<any> {
     return new Promise((ok, fail) => {
       if (!work.id) {
-        work.id = uuid.v4();
+        let now = new Date();
+        work.id = (<any>now).format('YYYY-MM-DD-') + uuid.v4();
       }
       let request = {
         TableName: this.config.dynamoDBWorkTable,
@@ -177,7 +179,7 @@ export default class DynamoDBStateManager implements StateManager {
     return new Promise((ok, fail) => {
       let keys = ids.map((row) => {
         return {
-          HashKeyElement: {
+          id: {
             S: row
           }
         };
@@ -186,14 +188,12 @@ export default class DynamoDBStateManager implements StateManager {
       request.RequestItems[this.config.dynamoDBWorkTable] = {
         Keys: keys
       };
-      console.log('todo: batch get = ' + JSON.stringify(request, null, 2));
       this.db.batchGetItem(request, (err, data) => {
         if (err) {
           return fail(err);
         }
-        console.log('todo: batch get result = ' + JSON.stringify(data, null, 2));
         let tableData = data.Responses[this.config.dynamoDBWorkTable];
-        let works = tableData.Items.map((row) => {
+        let works = tableData.map((row) => {
           return this.deserializeWork(row);
         })
         ok(works);

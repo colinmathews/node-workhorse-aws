@@ -14,7 +14,7 @@ import { createS3, download } from'../lib/util/aws-util'
 
 describe('S3', () => {
   let subject : Workhorse;
-  let baseWorkPath = `${__dirname}/test-work/`;
+  let baseWorkPath = 'working://dist/test/test-work/';
 
   function getAWSConfig() {
     let jsonPath = path.resolve(__dirname, '../../aws-config.json');
@@ -73,7 +73,7 @@ describe('S3', () => {
         let find = logs.filter((row) => {
           return row.indexOf('Finalizer succeeded') >= 0;
         });
-        assert.lengthOf(find, 1);
+        assert.lengthOf(find, 1, JSON.stringify(logs, null, 2));
         find = logs.filter((row) => {
           return row.indexOf('Creating child work') >= 0;
         });

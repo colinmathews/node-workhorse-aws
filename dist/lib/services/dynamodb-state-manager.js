@@ -1,4 +1,5 @@
 "use strict";
+require('date-format-lite');
 var es6_promise_1 = require('es6-promise');
 var node_workhorse_1 = require('node-workhorse');
 var aws_sdk_1 = require('aws-sdk');
@@ -20,7 +21,7 @@ function serializeAsItem(data) {
     }
     if (data instanceof Array) {
         return { L: data.map(function (row) {
-                serializeAsItem(row);
+                return serializeAsItem(row);
             }) };
     }
     if (typeof (data) === 'function') {
@@ -87,7 +88,8 @@ var DynamoDBStateManager = (function () {
         var _this = this;
         return new es6_promise_1.Promise(function (ok, fail) {
             if (!work.id) {
-                work.id = uuid.v4();
+                var now = new Date();
+                work.id = now.format('YYYY-MM-DD-') + uuid.v4();
             }
             var request = {
                 TableName: _this.config.dynamoDBWorkTable,
@@ -169,7 +171,7 @@ var DynamoDBStateManager = (function () {
         return new es6_promise_1.Promise(function (ok, fail) {
             var keys = ids.map(function (row) {
                 return {
-                    HashKeyElement: {
+                    id: {
                         S: row
                     }
                 };
@@ -178,14 +180,12 @@ var DynamoDBStateManager = (function () {
             request.RequestItems[_this.config.dynamoDBWorkTable] = {
                 Keys: keys
             };
-            console.log('todo: batch get = ' + JSON.stringify(request, null, 2));
             _this.db.batchGetItem(request, function (err, data) {
                 if (err) {
                     return fail(err);
                 }
-                console.log('todo: batch get result = ' + JSON.stringify(data, null, 2));
                 var tableData = data.Responses[_this.config.dynamoDBWorkTable];
-                var works = tableData.Items.map(function (row) {
+                var works = tableData.map(function (row) {
                     return _this.deserializeWork(row);
                 });
                 ok(works);

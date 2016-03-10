@@ -4,7 +4,6 @@ import { Runnable, Workhorse, Response, Work } from 'node-workhorse';
 export default class Calculator implements Runnable {
   errors: Error[] = [];
   workhorse: Workhorse;
-  baseWorkPath: string = `${__dirname}/`;
 
   run (work: Work): Promise<Response> {
     return new Promise((ok, fail) => {
@@ -26,7 +25,7 @@ export default class Calculator implements Runnable {
   }
 
   private createChildWork(input: any) {
-    return [new Work(`${this.baseWorkPath}calculator`, {
+    return [new Work('working://dist/test/test-work/calculator', {
       x: input.x,
       y: input.y
     })];

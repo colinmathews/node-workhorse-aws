@@ -13,7 +13,7 @@ var dynamodb_state_manager_1 = require('../lib/services/dynamodb-state-manager')
 // TODO: In addition to calculator specs, create specs to put/get and batch
 describe('DynamoDB', function () {
     var subject;
-    var baseWorkPath = __dirname + "/test-work/";
+    var baseWorkPath = 'working://dist/test/test-work/';
     function getAWSConfig() {
         var jsonPath = path.resolve(__dirname, '../../aws-config.json');
         if (!fs.existsSync(jsonPath)) {

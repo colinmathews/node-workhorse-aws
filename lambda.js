@@ -1,19 +1,22 @@
-var LambdaRouter = require('./dist/services/lambda-router');
-var AWSConfig = require('./dist/models/aws-config');
-var S3LambdaSourceConfig from './dist/models/lambda-source-config/s3';
+var Index = require('./dist/index');
+var LambdaRouter = Index.LambdaRouter;
+var AWSConfig = Index.AWSConfig;
+var S3LambdaSourceConfig = Index.S3LambdaSourceConfig;
 var Workhorse = require('node-workhorse').Workhorse;
 var Config = require('node-workhorse').Config;
-var S3Logger = require('./dist/services/s3-logger');
-var DynamoDBStateManager = require('./dist/services/dynamodb-state-manager');
+var S3Logger = Index.S3Logger;
+var DynamoDBStateManager = Index.DynamoDBStateManager;
+var path = require('path');
+var fs = require('fs');
 
 function getConfig() {
-  let jsonPath = path.resolve(__dirname, './aws-config.json');
+  var jsonPath = path.resolve(__dirname, './aws-config.json');
   if (!fs.existsSync(jsonPath)) {
-    throw new Error("Please create a 'aws-config.json' file in the root directory of this project to test with AWS resources")
+    throw new Error(jsonPath + " not found. Please create a 'aws-config.json' file in the root directory of this project to test with AWS resources")
   }
 
-  let rawConfig = JSON.parse(fs.readFileSync(jsonPath));
-  let awsConfig = new AWSConfig(rawConfig);
+  var rawConfig = JSON.parse(fs.readFileSync(jsonPath));
+  var awsConfig = new AWSConfig(rawConfig);
   return {
     raw: rawConfig,
     aws: awsConfig

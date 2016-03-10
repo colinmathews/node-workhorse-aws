@@ -4,7 +4,6 @@ var node_workhorse_1 = require('node-workhorse');
 var Calculator = (function () {
     function Calculator() {
         this.errors = [];
-        this.baseWorkPath = __dirname + "/";
     }
     Calculator.prototype.run = function (work) {
         var _this = this;
@@ -26,7 +25,7 @@ var Calculator = (function () {
         });
     };
     Calculator.prototype.createChildWork = function (input) {
-        return [new node_workhorse_1.Work(this.baseWorkPath + "calculator", {
+        return [new node_workhorse_1.Work('working://dist/test/test-work/calculator', {
                 x: input.x,
                 y: input.y
             })];

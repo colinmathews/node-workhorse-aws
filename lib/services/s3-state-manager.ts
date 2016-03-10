@@ -1,3 +1,4 @@
+require('date-format-lite'); 
 import { Promise } from 'es6-promise';
 import { Work, StateManager, Workhorse} from 'node-workhorse';
 import AWSConfig from '../models/aws-config';
@@ -5,8 +6,9 @@ import { S3, config as awsConfig, Credentials } from 'aws-sdk';
 
 export default class S3StateManager implements StateManager {
   workhorse: Workhorse;
-  static stateMap = null;
-  static nextID: number;
+  private static stateMap = null;
+  private static nextNumericID: number = 0;
+  private static nextID: string;
 
   constructor(public config:AWSConfig) {
     awsConfig.update({
@@ -18,29 +20,41 @@ export default class S3StateManager implements StateManager {
   save (work: Work): Promise<any> {
     return this.readDB()
     .then(() => {
-      return this.saveToMap(work);
-    })
-    .then(() => {
-      return this.writeDB();
+      if (this.hasChanged(work)) {
+        this.saveToMap(work);
+        return this.writeDB();
+      }
     });
+  }
+
+  private hasChanged(work:Work):boolean {
+    let previous = S3StateManager.stateMap[work.id];
+    return !previous || JSON.stringify(previous) !== JSON.stringify(work);
   }
 
   private saveToMap(work: Work) {
     if (!work.id) {
-      work.id = (S3StateManager.nextID++).toString();
+      work.id = S3StateManager.nextID;
+      if (!work.id) {
+        throw new Error("Expected work to have an id");
+      }
+      S3StateManager.nextID = S3StateManager.calculateNextID();
     }
-    S3StateManager.stateMap[work.id] = work;
+    S3StateManager.stateMap[work.id] = work.copy();
   }
 
   saveAll (work: Work[]): Promise<any> {
     return this.readDB()
     .then(() => {
-      work.forEach((row) => {
-        this.saveToMap(row);
-      });
-    })
-    .then(() => {
-      return this.writeDB();
+      let anyChanged = work.reduce((result, row) => {
+        return result || this.hasChanged(row);
+      }, false);
+      if (anyChanged) {
+        work.forEach((row) => {
+          this.saveToMap(row);
+        });  
+        return this.writeDB();
+      }
     });
   }
 
@@ -119,18 +133,34 @@ export default class S3StateManager implements StateManager {
     }); 
   }
 
+  private static translateNumericIDIntoID(id:number):string {
+    let now = new Date();
+    return (<any>now).format('YYYY-MM-DD-') + id.toString();
+  }
+
   private static calculateNextID() {
-    let nextID = 1;
+    if (S3StateManager.nextNumericID) {
+      S3StateManager.nextNumericID++;
+      return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
+    }
     let state = S3StateManager.stateMap;
     if (!state) {
-      return nextID;
+      S3StateManager.nextNumericID = 1;
     }
-    return Object.keys(state).reduce((result, key) => {
-      let id = parseInt(key, 10);
-      if (!isNaN(id) && id >= result) {
-        return id + 1;
+    else {
+      let previousID = S3StateManager.nextNumericID;
+      S3StateManager.nextNumericID = Object.keys(state).reduce((result, key) => {
+        let parsedKey = key.substring('YYYY-MM-DD-'.length);
+        let id = parseInt(parsedKey, 10);
+        if (!isNaN(id) && id >= result) {
+          return id + 1;
+        }
+        return result;
+      }, 1);
+      if (S3StateManager.nextNumericID === previousID) {
+        throw new Error("Expected id to be incremented: " + S3StateManager.nextNumericID)
       }
-      return result;
-    }, 1);
+    }
+    return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
   }
 }

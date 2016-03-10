@@ -5,12 +5,13 @@ import { S3 } from 'aws-sdk';
 import { createS3, download, upload, deleteFile } from'./aws-util'
 import padLeft from './pad-left';
 import flatten from './flatten';
+import logFilePathBase from './log-file-naming';
 
 function addPossiblelogKeysForWork(s3KeyPrefix:string, list:any[], work:any) {
   list.push({
     work: work,
-    inside: `${s3KeyPrefix}${work.id}.txt`,
-    outside: `${s3KeyPrefix}${work.id}-outside.txt`
+    inside: logFilePathBase(s3KeyPrefix, work.id) + '.txt',
+    outside: logFilePathBase(s3KeyPrefix, work.id) + '-outside.txt',
   });
 }
 

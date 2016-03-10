@@ -14,7 +14,7 @@ import DynamoDBStateManager from '../lib/services/dynamodb-state-manager';
 
 describe('DynamoDB', () => {
   let subject : Workhorse;
-  let baseWorkPath = `${__dirname}/test-work/`;
+  let baseWorkPath = 'working://dist/test/test-work/';
 
   function getAWSConfig() {
     let jsonPath = path.resolve(__dirname, '../../aws-config.json');

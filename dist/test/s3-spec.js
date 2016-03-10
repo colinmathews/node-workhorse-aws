@@ -13,7 +13,7 @@ var s3_logger_1 = require('../lib/services/s3-logger');
 var aws_util_1 = require('../lib/util/aws-util');
 describe('S3', function () {
     var subject;
-    var baseWorkPath = __dirname + "/test-work/";
+    var baseWorkPath = 'working://dist/test/test-work/';
     function getAWSConfig() {
         var jsonPath = path.resolve(__dirname, '../../aws-config.json');
         if (!fs.existsSync(jsonPath)) {
@@ -66,7 +66,7 @@ describe('S3', function () {
                 var find = logs.filter(function (row) {
                     return row.indexOf('Finalizer succeeded') >= 0;
                 });
-                chai_1.assert.lengthOf(find, 1);
+                chai_1.assert.lengthOf(find, 1, JSON.stringify(logs, null, 2));
                 find = logs.filter(function (row) {
                     return row.indexOf('Creating child work') >= 0;
                 });
