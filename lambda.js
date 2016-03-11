@@ -1,7 +1,7 @@
 var Index = require('./dist/index');
 var LambdaRouter = Index.LambdaRouter;
 var AWSConfig = Index.AWSConfig;
-var S3LambdaSourceConfig = Index.S3LambdaSourceConfig;
+var LambdaConfig = Index.LambdaConfig;
 var Workhorse = require('node-workhorse').Workhorse;
 var Config = require('node-workhorse').Config;
 var S3Logger = Index.S3Logger;
@@ -23,11 +23,10 @@ function getConfig() {
   };
 }
 
-// TODO: Create a factory to read options and generate the appropriate source
 exports.handler = function(options, context) {
   var configs = getConfig();
-  var s3Config = new S3LambdaSourceConfig(configs.aws, configs.raw.lambdaEventsS3BaseKey);
-  var router = new LambdaRouter(s3Config);
+  var config = new LambdaConfig(configs.aws, configs.raw);
+  var router = new LambdaRouter(config);
 
   var workhorse = new Workhorse(new Config({
     stateManager: new DynamoDBStateManager(configs.aws),

@@ -13,38 +13,20 @@ var S3LambdaSource = (function (_super) {
         _super.apply(this, arguments);
     }
     S3LambdaSource.prototype.sendWorkToLambda = function (event) {
-        var myConfig = this.config;
-        var s3 = aws_util_1.createS3(myConfig.aws);
-        var baseKey = myConfig.baseKey.replace(/\/?$/gi, '');
+        var s3 = aws_util_1.createS3(this.config.aws);
+        var baseKey = this.config.s3BaseKey.replace(/\/?$/gi, '');
         var now = new Date();
         var folder = now.format('YYYY-MM-DD');
         var uniqueID = now.format('hh:mm:ss.SS');
         var key = baseKey + "/" + folder + "/" + uniqueID + ".js";
-        return aws_util_1.upload(myConfig.aws, s3, key, JSON.stringify(event), 'application/json');
+        return aws_util_1.upload(this.config.aws, s3, key, JSON.stringify(event), 'application/json');
     };
     S3LambdaSource.prototype.parseRequest = function (request) {
-        var myConfig = this.config;
-        return Promise.resolve(this.normalizeRequest(request))
-            .then(function (record) {
-            var s3 = aws_util_1.createS3(myConfig.aws);
-            return aws_util_1.download(myConfig.aws, s3, record.object.key);
-        })
+        var s3 = aws_util_1.createS3(this.config.aws);
+        return aws_util_1.download(this.config.aws, s3, request.object.key)
             .then(function (result) {
             return JSON.parse(result);
         });
-    };
-    S3LambdaSource.prototype.normalizeRequest = function (request) {
-        if (!request.Records) {
-            throw new Error("Expected lambda request to have 'Records'");
-        }
-        if (request.Records.length !== 1) {
-            throw new Error("Expected lambda request.Records to have exactly one record. Found " + request.Records.length);
-        }
-        var record = request.Records[0];
-        if (!record.s3) {
-            throw new Error("Expected lambda request.Records[0] to have an \"s3\" property");
-        }
-        return record.s3;
     };
     return S3LambdaSource;
 }(base_1.default));

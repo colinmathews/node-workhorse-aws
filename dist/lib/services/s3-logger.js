@@ -33,13 +33,21 @@ var S3Logger = (function () {
         this.doLog(logger, message, level);
     };
     S3Logger.prototype.workEnded = function (work) {
+        var _this = this;
         if (work.parentID || work.childrenIDs.length > 0) {
             return es6_promise_1.Promise.resolve();
         }
-        return consolidate_logs_1.default(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
+        return this.flush()
+            .then(function () {
+            return consolidate_logs_1.default(_this.originalConfig, _this.workhorse, work, _this.workKeyPrefix);
+        });
     };
     S3Logger.prototype.finalizerRan = function (work) {
-        return consolidate_logs_1.default(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
+        var _this = this;
+        return this.flush()
+            .then(function () {
+            return consolidate_logs_1.default(_this.originalConfig, _this.workhorse, work, _this.workKeyPrefix);
+        });
     };
     S3Logger.prototype.flush = function () {
         var _this = this;

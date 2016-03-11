@@ -1,1 +1,0 @@
-{"version":3,"file":"s3.js","sourceRoot":"","sources":["../../../../lib/models/lambda-source-config/s3.ts"],"names":[],"mappings":";;;;;;AAAA,qBAAmC,QAAQ,CAAC,CAAA;AAG5C;IAAkD,wCAAsB;IACtE,8BAAmB,GAAa,EAAS,OAAc;QACrD,iBAAO,CAAC;QADS,QAAG,GAAH,GAAG,CAAU;QAAS,YAAO,GAAP,OAAO,CAAO;IAEvD,CAAC;IACH,2BAAC;AAAD,CAAC,AAJD,CAAkD,cAAsB,GAIvE;AAJD;sCAIC,CAAA"}

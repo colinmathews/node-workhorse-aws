@@ -1,14 +1,14 @@
 import { Promise } from 'es6-promise';
 import { Route, Work, Router, StateManager, Workhorse } from 'node-workhorse';
 import LambdaEvent from '../models/lambda-event';
-import LambdaSourceConfigBase from '../models/lambda-source-config/base'
-import S3LambdaSourceConfig from '../models/lambda-source-config/s3';
+import LambdaConfig from '../models/lambda-config'
+import LambdaSourceType from '../models/lambda-source-type';
 import LambdaSourceBase from './lambda-source/base';
 import S3LambdaSource from './lambda-source/s3';
 
-export default class MemoryRouter implements Router {
+export default class LambdaRouter implements Router {
   workhorse: Workhorse;
-  constructor(public config:LambdaSourceConfigBase) {
+  constructor(public config:LambdaConfig) {
   }
 
   route(options: Route): Promise<any> {
@@ -26,15 +26,15 @@ export default class MemoryRouter implements Router {
   }
 
   sendWorkToLambda(event:LambdaEvent): Promise<any> {
-    let source = this.getSource();
+    let source = this.getSourceForRouting();
     return source.sendWorkToLambda(event);
   }
 
   handleLambdaRequest(request, context): Promise<any> {
-    let source = this.getSource();
+    let [source, input] = this.getSourceFromRequest(request);
     let parsed:LambdaEvent;
     
-    return source.parseRequest(request)
+    return source.parseRequest(input)
     .then((result) => {
       parsed = result;
       return this.workhorse.state.load(parsed.workID)
@@ -55,11 +55,27 @@ export default class MemoryRouter implements Router {
     });
   }
 
-  private getSource(): LambdaSourceBase {
-    if (this.config instanceof S3LambdaSourceConfig) {
-      return new S3LambdaSource(this.config);
+  private getSourceForRouting(): LambdaSourceBase {
+    switch (this.config.routingSource) {
+      case LambdaSourceType.S3:
+        return new S3LambdaSource(this.config);
+      default:
+        throw new Error(`Unexpected routing source: ${this.config.routingSource}`);
     }
-    throw new Error("Unexpected configuration means we couldn't find a lambda source to use");
+  }
+
+  private getSourceFromRequest(request): [LambdaSourceBase, any] {
+    if (!request.Records) {
+      throw new Error("Expected lambda request to have 'Records'");
+    }
+    if (request.Records.length !== 1) {
+      throw new Error(`Expected lambda request.Records to have exactly one record. Found ${request.Records.length}`);
+    }
+    let record = request.Records[0];
+    if (record.s3) {
+      return [new S3LambdaSource(this.config), record.s3];
+    }
+    throw new Error(`Unexpected request: ${JSON.stringify(record, null, 2)}`);
   }
 
   private createLambdaEvent(workID: string, runFinalizer: boolean = false): Promise<LambdaEvent> {

@@ -11,7 +11,7 @@ var aws_config_1 = require('../lib/models/aws-config');
 var dynamodb_state_manager_1 = require('../lib/services/dynamodb-state-manager');
 var lambda_router_1 = require('../lib/services/lambda-router');
 var s3_logger_1 = require('../lib/services/s3-logger');
-var s3_1 = require('../lib/models/lambda-source-config/s3');
+var lambda_config_1 = require('../lib/models/lambda-config');
 describe('Lambda', function () {
     var subject;
     var baseWorkPath = 'working://dist/test/test-work/';
@@ -29,8 +29,8 @@ describe('Lambda', function () {
     }
     before(function () {
         var config = getAWSConfig();
-        var s3Config = new s3_1.default(config.aws, config.raw.lambdaEventsS3BaseKey);
-        var router = new lambda_router_1.default(s3Config);
+        var lambdaConfig = new lambda_config_1.default(config.aws, config.raw);
+        var router = new lambda_router_1.default(lambdaConfig);
         var logger = new s3_logger_1.default(config.aws);
         var stateManager = new dynamodb_state_manager_1.default(config.aws);
         subject = new node_workhorse_1.Workhorse(new node_workhorse_1.Config({
@@ -71,7 +71,7 @@ describe('Lambda', function () {
                 chai_1.assert.isNotOk(result.finalizerResult);
             });
         });
-        it('should spawn child work', function () {
+        xit('should spawn child work', function () {
             if (!rawConfig.lambdaEventsS3BaseKey) {
                 return this.skip();
             }
@@ -108,8 +108,8 @@ describe('Lambda', function () {
                 chai_1.assert.isOk(result.finalizerResult);
             });
         });
-        it('should check on the logs of a piece of work', function () {
-            var workID = '2016-03-11-54c093c7-0825-4084-bcd3-cd2e788d0def';
+        xit('should check on the logs of a piece of work', function () {
+            var workID = '';
             return subject.logger.downloadWorkLogs(workID)
                 .then(function (result) {
                 console.log(result);

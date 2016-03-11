@@ -47,11 +47,17 @@ export default class S3Logger implements Logger {
     if (work.parentID || work.childrenIDs.length > 0) {
       return Promise.resolve();
     }
-    return consolidateLogs(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
+    return this.flush()
+    .then(() => {
+      return consolidateLogs(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
+    });
   }
 
   finalizerRan(work: Work): Promise<any> {
-    return consolidateLogs(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
+    return this.flush()
+    .then(() => {
+      return consolidateLogs(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
+    });
   }
 
   flush (): Promise<any> {
