@@ -40,8 +40,8 @@ describe('Lambda', function () {
         }));
     });
     describe('#run', function () {
-        xit('should add two numbers', function () {
-            if (!rawConfig.lambdaEventsS3BaseKey) {
+        it('should add two numbers', function () {
+            if (!rawConfig.s3BaseKey) {
                 return this.skip();
             }
             this.timeout(20000);
@@ -71,8 +71,8 @@ describe('Lambda', function () {
                 chai_1.assert.isNotOk(result.finalizerResult);
             });
         });
-        xit('should spawn child work', function () {
-            if (!rawConfig.lambdaEventsS3BaseKey) {
+        it('should spawn child work', function () {
+            if (!rawConfig.s3BaseKey) {
                 return this.skip();
             }
             this.timeout(30000);

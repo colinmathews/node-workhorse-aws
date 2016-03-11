@@ -44,8 +44,8 @@ describe('Lambda', () => {
   });
 
   describe('#run', () => {
-    xit('should add two numbers', function() {
-      if (!rawConfig.lambdaEventsS3BaseKey) {
+    it('should add two numbers', function() {
+      if (!rawConfig.s3BaseKey) {
         return this.skip();
       }
 
@@ -77,8 +77,8 @@ describe('Lambda', () => {
       });
     });
 
-    xit('should spawn child work', function() {
-      if (!rawConfig.lambdaEventsS3BaseKey) {
+    it('should spawn child work', function() {
+      if (!rawConfig.s3BaseKey) {
         return this.skip();
       }
 
