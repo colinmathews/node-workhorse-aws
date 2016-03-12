@@ -1,8 +1,8 @@
-import LambdaConfig from '../../models/lambda-config';
+import AWSConfig from '../../models/aws-config';
 import LambdaEvent from '../../models/lambda-event';
 
 export default class LambdaSourceBase {
-  constructor(public config: LambdaConfig) {
+  constructor(public config: AWSConfig) {
   }
 
   // TODO: Use abstract methodes/class when possible

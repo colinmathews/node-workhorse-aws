@@ -1,6 +1,5 @@
 import AWSConfig from './lib/models/aws-config';
 import LambdaEvent from './lib/models/lambda-event';
-import LambdaConfig from './lib/models/lambda-config';
 import LambdaSourceType from './lib/models/lambda-source-type';
 
 import DynamoDBStateManager from './lib/services/dynamodb-state-manager';
@@ -13,7 +12,6 @@ import S3LambdaSource from './lib/services/lambda-source/s3';
 export {
   AWSConfig,
   LambdaEvent,
-  LambdaConfig,
   LambdaSourceType,
   DynamoDBStateManager,
   LambdaRouter,

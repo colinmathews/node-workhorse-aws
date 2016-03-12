@@ -13,17 +13,17 @@ var S3LambdaSource = (function (_super) {
         _super.apply(this, arguments);
     }
     S3LambdaSource.prototype.sendWorkToLambda = function (event) {
-        var s3 = aws_util_1.createS3(this.config.aws);
-        var baseKey = this.config.s3BaseKey.replace(/\/?$/gi, '');
+        var s3 = aws_util_1.createS3(this.config);
+        var baseKey = this.config.lambdaEventsS3BaseKey.replace(/\/?$/gi, '');
         var now = new Date();
         var folder = now.format('YYYY-MM-DD');
         var uniqueID = now.format('hh:mm:ss.SS');
         var key = baseKey + "/" + folder + "/" + uniqueID + ".js";
-        return aws_util_1.upload(this.config.aws, s3, key, JSON.stringify(event), 'application/json');
+        return aws_util_1.upload(this.config, s3, key, JSON.stringify(event), 'application/json');
     };
     S3LambdaSource.prototype.parseRequest = function (request) {
-        var s3 = aws_util_1.createS3(this.config.aws);
-        return aws_util_1.download(this.config.aws, s3, request.object.key)
+        var s3 = aws_util_1.createS3(this.config);
+        return aws_util_1.download(this.config, s3, request.object.key)
             .then(function (result) {
             return JSON.parse(result);
         });

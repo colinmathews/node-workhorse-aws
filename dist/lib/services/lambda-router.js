@@ -50,11 +50,11 @@ var LambdaRouter = (function () {
         });
     };
     LambdaRouter.prototype.getSourceForRouting = function () {
-        switch (this.config.routingSource) {
+        switch (this.config.lambdaRoutingSource) {
             case lambda_source_type_1.default.S3:
                 return new s3_1.default(this.config);
             default:
-                throw new Error("Unexpected routing source: " + this.config.routingSource);
+                throw new Error("Unexpected routing source: " + this.config.lambdaRoutingSource);
         }
     };
     LambdaRouter.prototype.getSourceFromRequest = function (request) {

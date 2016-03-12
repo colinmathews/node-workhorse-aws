@@ -10,32 +10,27 @@ import AWSConfig from '../lib/models/aws-config';
 import DynamoDBStateManager from '../lib/services/dynamodb-state-manager';
 import LambdaRouter from '../lib/services/lambda-router';
 import S3Logger from '../lib/services/s3-logger';
-import LambdaConfig from '../lib/models/lambda-config';
 
 describe('Lambda', () => {
   let subject: Workhorse;
   let baseWorkPath = 'working://dist/test/test-work/';
   let rawConfig;
 
-  function getAWSConfig() {
+  function getAWSConfig():AWSConfig {
     let jsonPath = path.resolve(__dirname, '../../aws-config.json');
     if (!fs.existsSync(jsonPath)) {
       throw new Error("Please create a 'aws-config.json' file in the root directory of this project to test with AWS resources")
     }
 
     rawConfig = JSON.parse(fs.readFileSync(jsonPath));
-    return {
-      raw: rawConfig,
-      aws: new AWSConfig(rawConfig)
-    };
+    return new AWSConfig(rawConfig);
   }
 
   before(function() {
     let config = getAWSConfig();
-    var lambdaConfig = new LambdaConfig(config.aws, config.raw);
-    var router = new LambdaRouter(lambdaConfig);
-    var logger = new S3Logger(config.aws);
-    var stateManager = new DynamoDBStateManager(config.aws);
+    var router = new LambdaRouter(config);
+    var logger = new S3Logger(config);
+    var stateManager = new DynamoDBStateManager(config);
     subject = new Workhorse(new Config({
       stateManager: stateManager,
       logger: logger,
@@ -45,7 +40,7 @@ describe('Lambda', () => {
 
   describe('#run', () => {
     it('should add two numbers', function() {
-      if (!rawConfig.s3BaseKey) {
+      if (!rawConfig.lambdaEventsS3BaseKey) {
         return this.skip();
       }
 
@@ -78,7 +73,7 @@ describe('Lambda', () => {
     });
 
     it('should spawn child work', function() {
-      if (!rawConfig.s3BaseKey) {
+      if (!rawConfig.lambdaEventsS3BaseKey) {
         return this.skip();
       }
 
@@ -117,7 +112,7 @@ describe('Lambda', () => {
     });
 
     xit('should check on the logs of a piece of work', function() {
-      let workID = '';
+      let workID = '2016-03-12-ade0be1b-6fe5-488a-b0af-5603f2914cfa';
       return (<any>subject.logger).downloadWorkLogs(workID)
       .then((result) => {
         console.log(result);

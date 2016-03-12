@@ -11,7 +11,6 @@ var aws_config_1 = require('../lib/models/aws-config');
 var dynamodb_state_manager_1 = require('../lib/services/dynamodb-state-manager');
 var lambda_router_1 = require('../lib/services/lambda-router');
 var s3_logger_1 = require('../lib/services/s3-logger');
-var lambda_config_1 = require('../lib/models/lambda-config');
 describe('Lambda', function () {
     var subject;
     var baseWorkPath = 'working://dist/test/test-work/';
@@ -22,17 +21,13 @@ describe('Lambda', function () {
             throw new Error("Please create a 'aws-config.json' file in the root directory of this project to test with AWS resources");
         }
         rawConfig = JSON.parse(fs.readFileSync(jsonPath));
-        return {
-            raw: rawConfig,
-            aws: new aws_config_1.default(rawConfig)
-        };
+        return new aws_config_1.default(rawConfig);
     }
     before(function () {
         var config = getAWSConfig();
-        var lambdaConfig = new lambda_config_1.default(config.aws, config.raw);
-        var router = new lambda_router_1.default(lambdaConfig);
-        var logger = new s3_logger_1.default(config.aws);
-        var stateManager = new dynamodb_state_manager_1.default(config.aws);
+        var router = new lambda_router_1.default(config);
+        var logger = new s3_logger_1.default(config);
+        var stateManager = new dynamodb_state_manager_1.default(config);
         subject = new node_workhorse_1.Workhorse(new node_workhorse_1.Config({
             stateManager: stateManager,
             logger: logger,
@@ -41,7 +36,7 @@ describe('Lambda', function () {
     });
     describe('#run', function () {
         it('should add two numbers', function () {
-            if (!rawConfig.s3BaseKey) {
+            if (!rawConfig.lambdaEventsS3BaseKey) {
                 return this.skip();
             }
             this.timeout(20000);
@@ -72,7 +67,7 @@ describe('Lambda', function () {
             });
         });
         it('should spawn child work', function () {
-            if (!rawConfig.s3BaseKey) {
+            if (!rawConfig.lambdaEventsS3BaseKey) {
                 return this.skip();
             }
             this.timeout(30000);
@@ -109,7 +104,7 @@ describe('Lambda', function () {
             });
         });
         xit('should check on the logs of a piece of work', function () {
-            var workID = '';
+            var workID = '2016-03-12-ade0be1b-6fe5-488a-b0af-5603f2914cfa';
             return subject.logger.downloadWorkLogs(workID)
                 .then(function (result) {
                 console.log(result);
