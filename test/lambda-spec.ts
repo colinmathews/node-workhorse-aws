@@ -112,7 +112,7 @@ describe('Lambda', () => {
     });
 
     xit('should check on the logs of a piece of work', function() {
-      let workID = '2016-03-12-ade0be1b-6fe5-488a-b0af-5603f2914cfa';
+      let workID = '2016-03-13-c040c182-2cdf-44aa-9669-b1f3437a46b8';
       return (<any>subject.logger).downloadWorkLogs(workID)
       .then((result) => {
         console.log(result);

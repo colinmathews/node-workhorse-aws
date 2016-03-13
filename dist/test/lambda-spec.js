@@ -104,7 +104,7 @@ describe('Lambda', function () {
             });
         });
         xit('should check on the logs of a piece of work', function () {
-            var workID = '2016-03-12-ade0be1b-6fe5-488a-b0af-5603f2914cfa';
+            var workID = '2016-03-13-c040c182-2cdf-44aa-9669-b1f3437a46b8';
             return subject.logger.downloadWorkLogs(workID)
                 .then(function (result) {
                 console.log(result);

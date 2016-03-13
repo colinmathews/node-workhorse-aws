@@ -66,6 +66,14 @@ var S3StateManager = (function () {
             });
         });
     };
+    S3StateManager.prototype.childWorkFinished = function (work, parent) {
+        parent.finishedChildrenIDs.push(work.id);
+        var isDone = parent.finishedChildrenIDs.length === parent.childrenIDs.length;
+        return this.save(parent)
+            .then(function () {
+            return isDone;
+        });
+    };
     S3StateManager.prototype.writeDB = function () {
         var _this = this;
         var s3 = new aws_sdk_1.S3();

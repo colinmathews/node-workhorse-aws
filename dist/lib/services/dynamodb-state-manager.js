@@ -146,6 +146,14 @@ var DynamoDBStateManager = (function () {
             return flatten_1.default(result);
         });
     };
+    DynamoDBStateManager.prototype.childWorkFinished = function (work, parent) {
+        parent.finishedChildrenIDs.push(work.id);
+        var isDone = parent.finishedChildrenIDs.length === parent.childrenIDs.length;
+        return this.save(parent)
+            .then(function () {
+            return isDone;
+        });
+    };
     DynamoDBStateManager.prototype.serializeWork = function (work) {
         return serializeAsItem({
             id: work.id,

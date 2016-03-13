@@ -77,6 +77,15 @@ export default class S3StateManager implements StateManager {
     });
   }
 
+  childWorkFinished(work: Work, parent: Work): Promise<boolean> {
+    parent.finishedChildrenIDs.push(work.id);
+    let isDone = parent.finishedChildrenIDs.length === parent.childrenIDs.length;
+    return this.save(parent)
+    .then(() => {
+      return isDone;
+    });
+  }
+
   private writeDB(): Promise<any> {
     let s3 = new S3();
     let key = `${this.config.s3StateKeyPrefix}.json`;

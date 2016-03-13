@@ -152,6 +152,14 @@ export default class DynamoDBStateManager implements StateManager {
     });
   }
 
+  childWorkFinished(work: Work, parent: Work): Promise<boolean> {
+    parent.finishedChildrenIDs.push(work.id);
+    let isDone = parent.finishedChildrenIDs.length === parent.childrenIDs.length;
+    return this.save(parent)
+      .then(() => {
+        return isDone;
+      });
+  }
 
   private serializeWork(work:Work) {
     return serializeAsItem({
