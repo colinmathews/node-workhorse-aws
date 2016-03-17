@@ -23,8 +23,8 @@ exports.handler = function(options, context) {
   var router = new LambdaRouter(config);
 
   var workhorse = new Workhorse(new Config({
-    stateManager: new DynamoDBStateManager(configs.aws),
-    logger: new S3Logger(configs.aws),
+    stateManager: new DynamoDBStateManager(config),
+    logger: new S3Logger(config),
     router: router
   }));
 
