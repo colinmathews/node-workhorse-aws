@@ -23,6 +23,30 @@ describe('Lambda', function () {
         rawConfig = JSON.parse(fs.readFileSync(jsonPath));
         return new aws_config_1.default(rawConfig);
     }
+    function waitForWork(workID) {
+        var fnWait = function () {
+            return new Promise(function (ok, fail) {
+                setTimeout(ok, 2000);
+            })
+                .then(function () {
+                return waitForWork(workID);
+            });
+        };
+        return subject.state.load(workID)
+            .then(function (work) {
+            console.log('todo: ' + JSON.stringify(work, null, 2));
+            if (!work.result || !work.result.ended || work.childrenIDs.length > work.finishedChildrenIDs.length) {
+                return fnWait();
+            }
+            // Wait a bit to ensure everything's been closed up
+            return new Promise(function (ok, fail) {
+                setTimeout(ok, 4000);
+            })
+                .then(function () {
+                return subject.state.load(workID);
+            });
+        });
+    }
     before(function () {
         var config = getAWSConfig();
         var router = new lambda_router_1.default(config);
@@ -39,16 +63,12 @@ describe('Lambda', function () {
             if (!rawConfig.lambdaEventsS3BaseKey) {
                 return this.skip();
             }
-            this.timeout(20000);
+            this.timeout(60000);
             var work;
             return subject.route(baseWorkPath + "calculator", { x: 1, y: 2 })
                 .then(function (result) {
                 work = result;
-                return new Promise(function (ok, fail) {
-                    setTimeout(function () {
-                        ok();
-                    }, 18 * 1000);
-                });
+                return waitForWork(work.id);
             })
                 .then(function () {
                 return subject.logger.downloadWorkLogs(work.id);
@@ -70,17 +90,13 @@ describe('Lambda', function () {
             if (!rawConfig.lambdaEventsS3BaseKey) {
                 return this.skip();
             }
-            this.timeout(30000);
+            this.timeout(60000);
             var work;
             return subject.route(baseWorkPath + "calculator", { x: 1, y: 2, twice: true })
                 .then(function (result) {
                 work = result;
                 console.log("Work id = " + work.id);
-                return new Promise(function (ok, fail) {
-                    setTimeout(function () {
-                        ok();
-                    }, 28 * 1000);
-                });
+                return waitForWork(work.id);
             })
                 .then(function () {
                 return subject.logger.downloadWorkLogs(work.id);

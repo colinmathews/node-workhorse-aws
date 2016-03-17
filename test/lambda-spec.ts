@@ -26,6 +26,32 @@ describe('Lambda', () => {
     return new AWSConfig(rawConfig);
   }
 
+  function waitForWork(workID:string): Promise<Work> {
+    let fnWait = () => {
+      return new Promise((ok, fail) => {
+        setTimeout(ok, 2000);
+      })
+      .then(() => {
+        return waitForWork(workID);
+      });
+    };
+
+    return subject.state.load(workID)
+    .then((work) => {
+      if (!work.result || !work.result.ended || work.childrenIDs.length > work.finishedChildrenIDs.length) {
+        return fnWait();
+      }
+
+      // Wait a bit to ensure everything's been closed up
+      return new Promise((ok, fail) => {
+        setTimeout(ok, 4000);
+      })
+      .then(() => {
+        return subject.state.load(workID);
+      });
+    });
+  }
+
   before(function() {
     let config = getAWSConfig();
     var router = new LambdaRouter(config);
@@ -44,16 +70,12 @@ describe('Lambda', () => {
         return this.skip();
       }
 
-      this.timeout(20000);
+      this.timeout(60000);
       let work: Work;
       return subject.route(`${baseWorkPath}calculator`, { x: 1, y: 2 })
       .then((result: Work) => {
         work = result;
-        return new Promise((ok, fail) => {
-          setTimeout(() => {
-            ok();
-          }, 18 * 1000);
-        });
+        return waitForWork(work.id);
       })
       .then(() => {
         return (<any>subject.logger).downloadWorkLogs(work.id);
@@ -77,17 +99,13 @@ describe('Lambda', () => {
         return this.skip();
       }
 
-      this.timeout(30000);
+      this.timeout(60000);
       let work: Work;
       return subject.route(`${baseWorkPath}calculator`, { x: 1, y: 2, twice: true })
       .then((result: Work) => {
         work = result;
         console.log("Work id = " + work.id);
-        return new Promise((ok, fail) => {
-          setTimeout(() => {
-            ok();
-          }, 28 * 1000);
-        });
+        return waitForWork(work.id);
       })
       .then(() => {
         return (<any>subject.logger).downloadWorkLogs(work.id);
