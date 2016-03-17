@@ -97,10 +97,39 @@ function findWorkLogs(list, work) {
 }
 function sortLogs(text) {
     var lines = text.split('\n');
-    lines.sort();
+    sortByTimestampFirstIfExists(lines);
     return lines.filter(function (row) {
         return !!row;
     });
+}
+function sortByTimestampFirstIfExists(list) {
+    var reg = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}/;
+    list.sort(function (a, b) {
+        var matchA = a.match(reg);
+        var matchB = b.match(reg);
+        if (!matchA || !matchB || matchA.length == 0 || matchB.length === 0) {
+            return a.localeCompare(b);
+        }
+        var dateA = matchA[0].date();
+        var dateB = matchB[0].date();
+        if (dateA < dateB) {
+            return -1;
+        }
+        if (dateB < dateA) {
+            return 1;
+        }
+        // Fall back to index
+        var indexA = list.indexOf(a);
+        var indexB = list.indexOf(b);
+        if (indexA < indexB) {
+            return -1;
+        }
+        if (indexA > indexB) {
+            return 1;
+        }
+        return 0;
+    });
+    return list;
 }
 function produceLogs(list, row, indent, spacesPerIndent) {
     if (indent === void 0) { indent = 0; }

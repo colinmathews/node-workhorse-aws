@@ -98,4 +98,24 @@ describe('Consolidate Logs', () => {
       assert.equal(result[14], " --- END WORK 2 ---");
     });
   });
+
+  describe('#same-timestamps', () => {
+    let now = new Date();
+    let formattedDate = (<any>now).format('YYYY-MM-DD hh:mm:ss.SS');
+    let list = [{
+      contents: [`${formattedDate} c`, `${formattedDate} a`, `${formattedDate} b`].join('\n'),
+      work: {
+        id: 1,
+        children: []
+      }
+    }];
+
+    it('should keep in original index order because timestamps match', function() {
+      let result = produceLogs(list, list[0], 0);
+      assert.lengthOf(result, 3);
+      assert.equal(result[0], `${formattedDate} c`);
+      assert.equal(result[1], `${formattedDate} a`);
+      assert.equal(result[2], `${formattedDate} b`);
+    });
+  });
 });

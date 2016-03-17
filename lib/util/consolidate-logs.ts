@@ -108,10 +108,42 @@ function findWorkLogs(list:any[], work:any) {
 
 function sortLogs(text:string): string[] {
   let lines = text.split('\n');
-  lines.sort();
+  sortByTimestampFirstIfExists(lines);
   return lines.filter((row) => {
     return !!row;
   });
+}
+
+function sortByTimestampFirstIfExists(list:string[]) {
+  let reg = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}/;
+  list.sort((a, b) => {
+    let matchA = a.match(reg);
+    let matchB = b.match(reg);
+    if (!matchA || !matchB || matchA.length == 0 || matchB.length === 0) {
+      return a.localeCompare(b);
+    }
+
+    let dateA = (<any>matchA[0]).date();
+    let dateB = (<any>matchB[0]).date();
+    if (dateA < dateB) {
+      return -1;
+    }
+    if (dateB < dateA) {
+      return 1;
+    }
+
+    // Fall back to index
+    let indexA = list.indexOf(a);
+    let indexB = list.indexOf(b);
+    if (indexA < indexB) {
+      return -1;
+    }
+    if (indexA > indexB) {
+      return 1;
+    }
+    return 0;
+  });
+  return list;
 }
 
 export function produceLogs(list:any[], row:any, indent:number = 0, spacesPerIndent:number = 5):string[] {

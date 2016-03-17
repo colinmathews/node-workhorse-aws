@@ -93,5 +93,23 @@ describe('Consolidate Logs', function () {
             chai_1.assert.equal(result[14], " --- END WORK 2 ---");
         });
     });
+    describe('#same-timestamps', function () {
+        var now = new Date();
+        var formattedDate = now.format('YYYY-MM-DD hh:mm:ss.SS');
+        var list = [{
+                contents: [(formattedDate + " c"), (formattedDate + " a"), (formattedDate + " b")].join('\n'),
+                work: {
+                    id: 1,
+                    children: []
+                }
+            }];
+        it('should keep in original index order because timestamps match', function () {
+            var result = consolidate_logs_1.produceLogs(list, list[0], 0);
+            chai_1.assert.lengthOf(result, 3);
+            chai_1.assert.equal(result[0], formattedDate + " c");
+            chai_1.assert.equal(result[1], formattedDate + " a");
+            chai_1.assert.equal(result[2], formattedDate + " b");
+        });
+    });
 });
 //# sourceMappingURL=consolidate-logs-spec.js.map
