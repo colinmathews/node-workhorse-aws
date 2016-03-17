@@ -1,7 +1,6 @@
 var Index = require('./dist/index');
 var LambdaRouter = Index.LambdaRouter;
 var AWSConfig = Index.AWSConfig;
-var LambdaConfig = Index.LambdaConfig;
 var Workhorse = require('node-workhorse').Workhorse;
 var Config = require('node-workhorse').Config;
 var S3Logger = Index.S3Logger;
@@ -16,16 +15,11 @@ function getConfig() {
   }
 
   var rawConfig = JSON.parse(fs.readFileSync(jsonPath));
-  var awsConfig = new AWSConfig(rawConfig);
-  return {
-    raw: rawConfig,
-    aws: awsConfig
-  };
+  return new AWSConfig(rawConfig);
 }
 
 exports.handler = function(options, context) {
-  var configs = getConfig();
-  var config = new LambdaConfig(configs.aws, configs.raw);
+  var config = getConfig();
   var router = new LambdaRouter(config);
 
   var workhorse = new Workhorse(new Config({
