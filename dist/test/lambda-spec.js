@@ -34,7 +34,6 @@ describe('Lambda', function () {
         };
         return subject.state.load(workID)
             .then(function (work) {
-            console.log('todo: ' + JSON.stringify(work, null, 2));
             if (!work.result || !work.result.ended || work.childrenIDs.length > work.finishedChildrenIDs.length) {
                 return fnWait();
             }
@@ -117,6 +116,22 @@ describe('Lambda', function () {
                 chai_1.assert.isNotNull(result.result.ended);
                 chai_1.assert.isNull(result.result.error);
                 chai_1.assert.isOk(result.finalizerResult);
+            });
+        });
+        it('should handle lots of requests all at once', function () {
+            if (!rawConfig.lambdaEventsS3BaseKey) {
+                return this.skip();
+            }
+            this.timeout(120 * 1000);
+            var work;
+            return subject.route(baseWorkPath + "calculator", { x: 1, y: 2, recurse: 30 })
+                .then(function (result) {
+                work = result;
+                console.log("Work id = " + work.id);
+                return waitForWork(work.id);
+            })
+                .then(function () {
+                console.log('todo: ' + JSON.stringify(work, null, 2));
             });
         });
         xit('should check on the logs of a piece of work', function () {

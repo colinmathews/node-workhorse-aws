@@ -17,6 +17,10 @@ var Calculator = (function () {
                 _this.workhorse.logger.logInsideWork(work, 'Creating child work');
                 children = _this.createChildWork(input);
             }
+            else if (input.recurse > 0) {
+                _this.workhorse.logger.logInsideWork(work, 'Creating child work');
+                children = _this.createChildWork(input);
+            }
             _this.workhorse.logger.logInsideWork(work, 'Performing addition');
             ok({
                 result: input.x + input.y,
@@ -25,10 +29,14 @@ var Calculator = (function () {
         });
     };
     Calculator.prototype.createChildWork = function (input) {
-        return [new node_workhorse_1.Work('working://dist/test/test-work/calculator', {
-                x: input.x,
-                y: input.y
-            })];
+        var newInput = {
+            x: input.x,
+            y: input.y
+        };
+        if (input.recurse) {
+            newInput.recurse = input.recurse - 1;
+        }
+        return [new node_workhorse_1.Work('working://dist/test/test-work/calculator', newInput)];
     };
     Calculator.prototype.onChildrenDone = function (work) {
         return es6_promise_1.Promise.resolve();

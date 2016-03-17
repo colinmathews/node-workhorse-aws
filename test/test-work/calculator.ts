@@ -16,6 +16,10 @@ export default class Calculator implements Runnable {
         this.workhorse.logger.logInsideWork(work, 'Creating child work');
         children = this.createChildWork(input);
       }
+      else if (input.recurse > 0) {
+        this.workhorse.logger.logInsideWork(work, 'Creating child work');
+        children = this.createChildWork(input);
+      }
       this.workhorse.logger.logInsideWork(work, 'Performing addition');
       ok({
         result: input.x + input.y,
@@ -25,10 +29,14 @@ export default class Calculator implements Runnable {
   }
 
   private createChildWork(input: any) {
-    return [new Work('working://dist/test/test-work/calculator', {
+    let newInput:any = {
       x: input.x,
       y: input.y
-    })];
+    };
+    if (input.recurse) {
+      newInput.recurse = input.recurse - 1;
+    }
+    return [new Work('working://dist/test/test-work/calculator', newInput)];
   }
 
   onChildrenDone (work: Work): Promise<any> {

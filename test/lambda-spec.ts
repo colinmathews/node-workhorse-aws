@@ -129,6 +129,24 @@ describe('Lambda', () => {
       });
     });
 
+    it('should handle lots of requests all at once', function() {
+      if (!rawConfig.lambdaEventsS3BaseKey) {
+        return this.skip();
+      }
+
+      this.timeout(120 * 1000);
+      let work: Work;
+      return subject.route(`${baseWorkPath}calculator`, { x: 1, y: 2, recurse: 30 })
+        .then((result: Work) => {
+          work = result;
+          console.log("Work id = " + work.id);
+          return waitForWork(work.id);
+        })
+        .then(() => {
+          console.log('todo: ' + JSON.stringify(work, null, 2));
+        })
+    });
+
     xit('should check on the logs of a piece of work', function() {
       let workID = '2016-03-13-c040c182-2cdf-44aa-9669-b1f3437a46b8';
       return (<any>subject.logger).downloadWorkLogs(workID)
