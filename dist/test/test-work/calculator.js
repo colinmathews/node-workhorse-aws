@@ -39,7 +39,17 @@ var Calculator = (function () {
         return [new node_workhorse_1.Work('working://dist/test/test-work/calculator', newInput)];
     };
     Calculator.prototype.onChildrenDone = function (work) {
-        return es6_promise_1.Promise.resolve();
+        return work.deep(this.workhorse)
+            .then(function (deep) {
+            return deep.children.reduce(function (result, row) {
+                var add = 0;
+                if (row.finalizerResult) {
+                    add += result + (row.finalizerResult.result || 0);
+                }
+                add += row.result.result;
+                return result + add;
+            }, 0);
+        });
     };
     return Calculator;
 }());

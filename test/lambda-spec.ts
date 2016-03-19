@@ -143,7 +143,13 @@ describe('Lambda', () => {
           return waitForWork(work.id);
         })
         .then(() => {
-          console.log('todo: ' + JSON.stringify(work, null, 2));
+          return subject.state.load(work.id)
+            .then((work) => {
+              return work.deep(subject);
+            });
+        })
+        .then((deep) => {
+          console.log('todo: ' + JSON.stringify(deep, null, 2));
         })
     });
 

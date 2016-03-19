@@ -40,6 +40,16 @@ export default class Calculator implements Runnable {
   }
 
   onChildrenDone (work: Work): Promise<any> {
-    return Promise.resolve();
+    return work.deep(this.workhorse)
+    .then((deep) => {
+      return deep.children.reduce((result, row) => {
+        var add = 0;
+        if (row.finalizerResult) {
+          add += result + (row.finalizerResult.result || 0);
+        }
+        add += row.result.result;
+        return result + add;
+      }, 0);
+    });
   }
 }

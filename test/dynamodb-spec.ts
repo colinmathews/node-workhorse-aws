@@ -35,7 +35,7 @@ describe('DynamoDB', () => {
 
   describe('#run', () => {
     it('should add two numbers', function(){
-      this.timeout(10000);
+      this.timeout(20000);
       return subject.run(`${baseWorkPath}calculator`, { x: 1, y: 2 })
       .then((work: Work) => {
         assert.isNotNull(work.result);
@@ -43,13 +43,32 @@ describe('DynamoDB', () => {
       });
     });
 
-    it('should spawn child work', function(){
-      this.timeout(10000);
+    it('should recurse a few times', function() {
+      this.timeout(95000);
+      return subject.run(`${baseWorkPath}calculator`, { x: 1, y: 2, recurse: 3 })
+      .then((work: Work) => {
+        return subject.state.load(work.id)
+        .then((work) => {
+          return work.deep(subject);
+         });
+      })
+      .then((deep) => {
+        assert.isNotNull(deep.result);
+        assert.equal(deep.finalizerResult.result, 9);
+      });
+    });
+
+    it('should spawn child work test', function(){
+      this.timeout(60000);
       return subject.run(`${baseWorkPath}calculator`, { x: 1, y: 2, twice: true })
+      .then((work: Work) => {
+        return subject.state.load(work.id);
+      })
       .then((work: Work) => {
         assert.isNotNull(work.result);
         assert.equal(work.result.result, 3);
         assert.lengthOf(work.childrenIDs, 1);
+        assert.lengthOf(work.finishedChildrenIDs, 1);
       });
     });
   });
