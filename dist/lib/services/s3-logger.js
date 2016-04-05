@@ -22,15 +22,15 @@ var S3Logger = (function () {
         this.logger = new s3_append_1.S3Append(this.s3Config, this.generalKey);
     }
     S3Logger.prototype.log = function (message, level) {
-        this.doLog(this.logger, message, level);
+        this.doLog(null, this.logger, message, level);
     };
     S3Logger.prototype.logInsideWork = function (work, message, level) {
         var logger = this.getWorkLogger(true, work);
-        this.doLog(logger, message, level);
+        this.doLog(work, logger, message, level);
     };
     S3Logger.prototype.logOutsideWork = function (work, message, level) {
         var logger = this.getWorkLogger(false, work);
-        this.doLog(logger, message, level);
+        this.doLog(work, logger, message, level);
     };
     S3Logger.prototype.workEnded = function (work) {
         var _this = this;
@@ -69,8 +69,9 @@ var S3Logger = (function () {
         var key = log_file_naming_1.default(this.workKeyPrefix, workID) + '.txt';
         return aws_util_1.download(this.originalConfig, s3, key);
     };
-    S3Logger.prototype.doLog = function (logger, message, level) {
-        var _a = node_workhorse_1.ConsoleLogger.formatMessage(message, level), formattedMessage = _a[0], parsedLevel = _a[1];
+    S3Logger.prototype.doLog = function (work, logger, message, level) {
+        var messageWithWorkID = work ? message + ": " + work.id : message;
+        var _a = node_workhorse_1.ConsoleLogger.formatMessage(messageWithWorkID, level), formattedMessage = _a[0], parsedLevel = _a[1];
         // Ignore
         if (this.level && this.level < parsedLevel) {
             return;

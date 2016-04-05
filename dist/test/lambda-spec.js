@@ -131,7 +131,7 @@ describe('Lambda', function () {
             }
             this.timeout(120 * 1000);
             var work;
-            return subject.route(baseWorkPath + "calculator", { x: 1, y: 2, recurse: 30 })
+            return subject.route(baseWorkPath + "calculator", { x: 1, y: 2, recurse: 5 }) //todo:
                 .then(function (result) {
                 work = result;
                 console.log("Work id = " + work.id);
@@ -144,12 +144,42 @@ describe('Lambda', function () {
                 });
             })
                 .then(function (deep) {
-                console.log('todo: ' + JSON.stringify(deep, null, 2));
+                var fnTodo = function (row) {
+                    return {
+                        id: row.id,
+                        finalizerResult: {
+                            started: row.finalizerResult ? row.finalizerResult.started : null,
+                            ended: row.finalizerResult ? row.finalizerResult.ended : null
+                        },
+                        result: {
+                            started: row.result ? row.result.started : null,
+                            ended: row.result ? row.result.ended : null
+                        },
+                        children: row.children.map(fnTodo)
+                    };
+                };
+                console.log('todo: ' + JSON.stringify(fnTodo(deep), null, 2));
+                chai_1.assert.equal(deep.ancestorLevel, 0);
+                // todo: shouldn't this be true: assert.equal(deep.finalizerResult.result, 9);
+                chai_1.assert.equal(deep.children[0].ancestorLevel, 1);
+                chai_1.assert.equal(deep.children[0].children[0].ancestorLevel, 2);
+                chai_1.assert.equal(deep.children[0].children[0].children[0].ancestorLevel, 3);
+                // Make sure the inner-most child has finished running
+                var fnLeaf = function (work) {
+                    if (work.children.length === 0) {
+                        return work;
+                    }
+                    return fnLeaf(work.children[0]);
+                };
+                var leaf = fnLeaf(deep);
+                chai_1.assert.isNotNull(leaf.result);
+                chai_1.assert.isNotNull(leaf.result.ended);
+                chai_1.assert.isTrue(deep.finalizerResult.ended >= leaf.result.ended);
             });
         });
         it('should check on the logs of a piece of work', function () {
             this.timeout(30 * 1000);
-            var workID = '2016-04-05-47d2deab-4869-4666-8645-648c70ee6e3f';
+            var workID = '2016-04-05-696fda5d-969f-41e8-af09-192d8599a902';
             return subject.logger.downloadWorkLogs(workID)
                 .then(function (result) {
                 console.log(result);

@@ -30,17 +30,17 @@ export default class S3Logger implements Logger {
   }
 
   log (message: string, level?: LogLevel|Error) {
-    this.doLog(this.logger, message, level);
+    this.doLog(null, this.logger, message, level);
   }
 
   logInsideWork (work: Work, message: string, level?: LogLevel|Error) {
     let logger = this.getWorkLogger(true, work);
-    this.doLog(logger, message, level);
+    this.doLog(work, logger, message, level);
   }
 
   logOutsideWork (work: Work, message: string, level?: LogLevel|Error) {
     let logger = this.getWorkLogger(false, work);
-    this.doLog(logger, message, level);
+    this.doLog(work, logger, message, level);
   }
 
   workEnded (work:Work): Promise<any> {
@@ -81,8 +81,9 @@ export default class S3Logger implements Logger {
     return download(this.originalConfig, s3, key);
   }
 
-  private doLog(logger:S3Append, message:string, level?: LogLevel|Error) {
-    let [formattedMessage, parsedLevel] = ConsoleLogger.formatMessage(message, level);
+  private doLog(work: Work, logger: S3Append, message: string, level?: LogLevel | Error) {
+    let messageWithWorkID = work ? `${message}: ${work.id}` : message;
+    let [formattedMessage, parsedLevel] = ConsoleLogger.formatMessage(messageWithWorkID, level);
 
     // Ignore
     if (this.level && this.level < parsedLevel) {
