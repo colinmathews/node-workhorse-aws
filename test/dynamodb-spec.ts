@@ -55,6 +55,10 @@ describe('DynamoDB', () => {
       .then((deep) => {
         assert.isNotNull(deep.result);
         assert.equal(deep.finalizerResult.result, 9);
+        assert.equal(deep.ancestorLevel, 0);
+        assert.equal(deep.children[0].ancestorLevel, 1);
+        assert.equal(deep.children[0].children[0].ancestorLevel, 2);
+        assert.equal(deep.children[0].children[0].children[0].ancestorLevel, 3);
       });
     });
 

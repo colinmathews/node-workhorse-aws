@@ -165,6 +165,7 @@ export default class DynamoDBStateManager implements StateManager {
     return serializeAsItem({
       id: work.id,
       workLoadHref: work.workLoadHref,
+      ancestorLevel: work.ancestorLevel,
       input: work.input,
       result: work.result,
       finalizerResult: work.finalizerResult,

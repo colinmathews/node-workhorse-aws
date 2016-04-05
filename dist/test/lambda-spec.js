@@ -131,15 +131,25 @@ describe('Lambda', function () {
                 return waitForWork(work.id);
             })
                 .then(function () {
-                console.log('todo: ' + JSON.stringify(work, null, 2));
+                return subject.state.load(work.id)
+                    .then(function (work) {
+                    return work.deep(subject);
+                });
+            })
+                .then(function (deep) {
+                console.log('todo: ' + JSON.stringify(deep, null, 2));
             });
         });
-        xit('should check on the logs of a piece of work', function () {
-            var workID = '2016-03-13-c040c182-2cdf-44aa-9669-b1f3437a46b8';
+        it('should check on the logs of a piece of work', function () {
+            this.timeout(30 * 1000);
+            var workID = '2016-04-05-233eb3c1-e39a-44d5-9dfd-def68a8296b2';
             return subject.logger.downloadWorkLogs(workID)
                 .then(function (result) {
                 console.log(result);
-                return subject.state.load(workID);
+                return subject.state.load(workID)
+                    .then(function (work) {
+                    return work.deep(subject);
+                });
             })
                 .then(function (result) {
                 console.log(JSON.stringify(result, null, 2));

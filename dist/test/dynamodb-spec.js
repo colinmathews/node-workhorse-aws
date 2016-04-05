@@ -49,6 +49,10 @@ describe('DynamoDB', function () {
                 .then(function (deep) {
                 chai_1.assert.isNotNull(deep.result);
                 chai_1.assert.equal(deep.finalizerResult.result, 9);
+                chai_1.assert.equal(deep.ancestorLevel, 0);
+                chai_1.assert.equal(deep.children[0].ancestorLevel, 1);
+                chai_1.assert.equal(deep.children[0].children[0].ancestorLevel, 2);
+                chai_1.assert.equal(deep.children[0].children[0].children[0].ancestorLevel, 3);
             });
         });
         it('should spawn child work test', function () {

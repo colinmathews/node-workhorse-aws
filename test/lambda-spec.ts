@@ -153,12 +153,16 @@ describe('Lambda', () => {
         })
     });
 
-    xit('should check on the logs of a piece of work', function() {
-      let workID = '2016-03-13-c040c182-2cdf-44aa-9669-b1f3437a46b8';
+    it('should check on the logs of a piece of work', function() {
+      this.timeout(30 * 1000);
+      let workID = '2016-04-05-233eb3c1-e39a-44d5-9dfd-def68a8296b2';
       return (<any>subject.logger).downloadWorkLogs(workID)
       .then((result) => {
         console.log(result);
-        return subject.state.load(workID);
+        return subject.state.load(workID)
+        .then((work) => {
+          return work.deep(subject);
+        });
       })
       .then((result) => {
         console.log(JSON.stringify(result, null, 2));
