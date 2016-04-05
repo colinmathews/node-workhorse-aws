@@ -61,20 +61,17 @@ var LambdaRouter = (function () {
         }
     };
     LambdaRouter.prototype.getSourceFromRequest = function (request) {
-        var json = JSON.stringify(request, null, 2);
-        console.log(json);
-        throw new Error('todo: ' + json);
-        // if (!request.Records) {
-        //   throw new Error("Expected lambda request to have 'Records'");
-        // }
-        // if (request.Records.length !== 1) {
-        //   throw new Error(`Expected lambda request.Records to have exactly one record. Found ${request.Records.length}`);
-        // }
-        // let record = request.Records[0];
-        // if (record.s3) {
-        //   return [new S3LambdaSource(this.config), record.s3];
-        // }
-        // throw new Error(`Unexpected request: ${JSON.stringify(record, null, 2)}`);
+        if (request.Records) {
+            if (request.Records.length !== 1) {
+                throw new Error("Expected lambda request.Records to have exactly one record. Found " + request.Records.length);
+            }
+            var record = request.Records[0];
+            if (record.s3) {
+                return [new s3_1.default(this.config), record.s3];
+            }
+            throw new Error("Unexpected request: " + JSON.stringify(record, null, 2));
+        }
+        return [new api_gateway_1.default(this.config), request];
     };
     LambdaRouter.prototype.createLambdaEvent = function (workID, runFinalizer) {
         if (runFinalizer === void 0) { runFinalizer = false; }

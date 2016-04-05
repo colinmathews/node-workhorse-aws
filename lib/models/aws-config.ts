@@ -10,6 +10,8 @@ export default class AWSConfig {
   dynamoDBWorkTable: string;
   lambdaRoutingSource: LambdaSourceType;
   lambdaEventsS3BaseKey: string;
+  lambdaEventsAPIGatewayPostUrl: string;
+  lambdaEventsAPIGatewayKey: string;
   
   constructor(props: any = {}) {
     Object.keys(props).forEach((key) => {
