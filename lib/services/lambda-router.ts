@@ -5,6 +5,7 @@ import AWSConfig from '../models/aws-config'
 import LambdaSourceType from '../models/lambda-source-type';
 import LambdaSourceBase from './lambda-source/base';
 import S3LambdaSource from './lambda-source/s3';
+import APIGatewayLambdaSource from './lambda-source/api-gateway';
 
 export default class LambdaRouter implements Router {
   workhorse: Workhorse;
@@ -59,23 +60,29 @@ export default class LambdaRouter implements Router {
     switch (this.config.lambdaRoutingSource) {
       case LambdaSourceType.S3:
         return new S3LambdaSource(this.config);
+      case LambdaSourceType.APIGateway:
+        return new APIGatewayLambdaSource(this.config);
       default:
         throw new Error(`Unexpected routing source: ${this.config.lambdaRoutingSource}`);
     }
   }
 
   private getSourceFromRequest(request): [LambdaSourceBase, any] {
-    if (!request.Records) {
-      throw new Error("Expected lambda request to have 'Records'");
-    }
-    if (request.Records.length !== 1) {
-      throw new Error(`Expected lambda request.Records to have exactly one record. Found ${request.Records.length}`);
-    }
-    let record = request.Records[0];
-    if (record.s3) {
-      return [new S3LambdaSource(this.config), record.s3];
-    }
-    throw new Error(`Unexpected request: ${JSON.stringify(record, null, 2)}`);
+    let json = JSON.stringify(request, null, 2);
+    console.log(json);
+    throw new Error('todo: ' + json);
+    
+    // if (!request.Records) {
+    //   throw new Error("Expected lambda request to have 'Records'");
+    // }
+    // if (request.Records.length !== 1) {
+    //   throw new Error(`Expected lambda request.Records to have exactly one record. Found ${request.Records.length}`);
+    // }
+    // let record = request.Records[0];
+    // if (record.s3) {
+    //   return [new S3LambdaSource(this.config), record.s3];
+    // }
+    // throw new Error(`Unexpected request: ${JSON.stringify(record, null, 2)}`);
   }
 
   private createLambdaEvent(workID: string, runFinalizer: boolean = false): Promise<LambdaEvent> {

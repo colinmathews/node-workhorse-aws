@@ -17,4 +17,6 @@ var base_1 = require('./lib/services/lambda-source/base');
 exports.LambdaSourceBase = base_1.default;
 var s3_1 = require('./lib/services/lambda-source/s3');
 exports.S3LambdaSource = s3_1.default;
+var api_gateway_1 = require('./lib/services/lambda-source/api-gateway');
+exports.APIGatewayLambdaSource = api_gateway_1.default;
 //# sourceMappingURL=index.js.map

@@ -8,6 +8,7 @@ import S3Logger from './lib/services/s3-logger';
 import S3StateManager from './lib/services/s3-state-manager';
 import LambdaSourceBase from './lib/services/lambda-source/base';
 import S3LambdaSource from './lib/services/lambda-source/s3';
+import APIGatewayLambdaSource from './lib/services/lambda-source/api-gateway';
 
 export {
   AWSConfig,
@@ -18,5 +19,6 @@ export {
   S3Logger,
   S3StateManager,
   LambdaSourceBase,
-  S3LambdaSource
+  S3LambdaSource,
+  APIGatewayLambdaSource
 }
