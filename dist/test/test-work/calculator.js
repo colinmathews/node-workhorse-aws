@@ -30,7 +30,7 @@ var Calculator = (function () {
     };
     Calculator.prototype.createChildWork = function (input) {
         var newInput = {
-            x: input.x,
+            x: input.errorOnChildRun ? 'purposeful-error' : input.x,
             y: input.y
         };
         if (input.recurse) {

@@ -30,7 +30,7 @@ export default class Calculator implements Runnable {
 
   private createChildWork(input: any) {
     let newInput:any = {
-      x: input.x,
+      x: input.errorOnChildRun ? 'purposeful-error' : input.x,
       y: input.y
     };
     if (input.recurse) {

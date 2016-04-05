@@ -42,12 +42,6 @@ describe('Lambda', () => {
       if (!work.result || !work.result.ended || work.childrenIDs.length > work.finishedChildrenIDs.length) {
         return fnWait();
       }
-      if (work.result && work.result.ended) {
-        console.log('todo: work has a result: ' + util.isDate(work.result.ended));
-      }
-      if (work.childrenIDs.length === work.finishedChildrenIDs.length) {
-        console.log('todo: all children appear finished: ' + JSON.stringify([work.childrenIDs, work.finishedChildrenIDs], null, 2));
-      }
 
       // Wait a bit to ensure everything's been closed up
       return new Promise((ok, fail) => {
@@ -136,6 +130,37 @@ describe('Lambda', () => {
       });
     });
 
+    it('should handle errors properly', function() {
+      if (!rawConfig.lambdaEventsS3BaseKey) {
+        return this.skip();
+      }
+
+      this.timeout(60000);
+      let work: Work;
+      return subject.route(`${baseWorkPath}calculator`, { x: 1, y: 2, errorOnChildRun: true, recurse: 1 })
+        .then((result: Work) => {
+          work = result;
+          console.log("Work id = " + work.id);
+          return waitForWork(work.id);
+        })
+        .then(() => {
+          return subject.state.load(work.id);
+        })
+        .then((result) => {
+          return result.deep(subject);
+        })
+        .then((result: Work) => {
+          console.log('todo: ' + JSON.stringify(result, null, 2));
+          // assert.lengthOf(result.childrenIDs, 1);
+          // assert.lengthOf(result.finishedChildrenIDs, 1);
+          // assert.equal(result.finishedChildrenIDs[0], result.childrenIDs[0]);
+          // assert.isNotNull(result.result);
+          // assert.isNotNull(result.result.ended);
+          // assert.isNull(result.result.error);
+          // assert.isOk(result.finalizerResult);
+        });
+    });
+
     it('should handle lots of requests all at once', function() {
       if (!rawConfig.lambdaEventsS3BaseKey) {
         return this.skip();
@@ -143,7 +168,8 @@ describe('Lambda', () => {
 
       this.timeout(120 * 1000);
       let work: Work;
-      return subject.route(`${baseWorkPath}calculator`, { x: 1, y: 2, recurse: 5 })//todo:
+      let numRecurses = 10;
+      return subject.route(`${baseWorkPath}calculator`, { x: 1, y: 2, recurse: numRecurses })
         .then((result: Work) => {
           work = result;
           console.log("Work id = " + work.id);
@@ -156,23 +182,8 @@ describe('Lambda', () => {
             });
         })
         .then((deep) => {
-          var fnTodo = (row) => {
-            return {
-              id: row.id,
-              finalizerResult: {
-                started: row.finalizerResult ? row.finalizerResult.started: null,
-                ended: row.finalizerResult ? row.finalizerResult.ended : null
-              },
-              result: {
-                started: row.result ? row.result.started : null,
-                ended: row.result ? row.result.ended : null
-              },
-              children: row.children.map(fnTodo)
-            };
-          };
-          console.log('todo: ' + JSON.stringify(fnTodo(deep), null, 2));
           assert.equal(deep.ancestorLevel, 0);
-          // todo: shouldn't this be true: assert.equal(deep.finalizerResult.result, 9);
+          assert.equal(deep.finalizerResult.result, 3 * numRecurses);
           assert.equal(deep.children[0].ancestorLevel, 1);
           assert.equal(deep.children[0].children[0].ancestorLevel, 2);
           assert.equal(deep.children[0].children[0].children[0].ancestorLevel, 3);
@@ -192,20 +203,20 @@ describe('Lambda', () => {
         })
     });
 
-    it('should check on the logs of a piece of work', function() {
-      this.timeout(30 * 1000);
-      let workID = '2016-04-05-696fda5d-969f-41e8-af09-192d8599a902';
-      return (<any>subject.logger).downloadWorkLogs(workID)
-      .then((result) => {
-        console.log(result);
-        return subject.state.load(workID)
-        // .then((work) => {
-        //   return work.deep(subject);
-        // });
-      })
-      .then((result) => {
-        console.log(JSON.stringify(result, null, 2));
-      });
-    });
+    // it('should check on the logs of a piece of work', function() {
+    //   this.timeout(30 * 1000);
+    //   let workID = '2016-04-05-8a26eb49-b6f6-4835-90d2-2b1599baf93f';
+    //   return (<any>subject.logger).downloadWorkLogs(workID)
+    //   .then((result) => {
+    //     console.log(result);
+    //     return subject.state.load(workID)
+    //     .then((work) => {
+    //       return work.deep(subject);
+    //     });
+    //   })
+    //   .then((result) => {
+    //     console.log(JSON.stringify(result, null, 2));
+    //   });
+    // });
   });
 });
