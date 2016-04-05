@@ -4,6 +4,7 @@ require('source-map-support').install({
 require('date-format-lite');
 let path = require('path');
 let fs = require('fs');
+let util = require('util');
 import { assert } from 'chai';
 import { Workhorse, Config, Work, LogLevel } from 'node-workhorse';
 import AWSConfig from '../lib/models/aws-config';
@@ -40,6 +41,12 @@ describe('Lambda', () => {
     .then((work) => {
       if (!work.result || !work.result.ended || work.childrenIDs.length > work.finishedChildrenIDs.length) {
         return fnWait();
+      }
+      if (work.result && work.result.ended) {
+        console.log('todo: work has a result: ' + util.isDate(work.result.ended));
+      }
+      if (work.childrenIDs.length === work.finishedChildrenIDs.length) {
+        console.log('todo: all children appear finished: ' + JSON.stringify([work.childrenIDs, work.finishedChildrenIDs], null, 2));
       }
 
       // Wait a bit to ensure everything's been closed up
@@ -155,14 +162,14 @@ describe('Lambda', () => {
 
     it('should check on the logs of a piece of work', function() {
       this.timeout(30 * 1000);
-      let workID = '2016-04-05-233eb3c1-e39a-44d5-9dfd-def68a8296b2';
+      let workID = '2016-04-05-47d2deab-4869-4666-8645-648c70ee6e3f';
       return (<any>subject.logger).downloadWorkLogs(workID)
       .then((result) => {
         console.log(result);
         return subject.state.load(workID)
-        .then((work) => {
-          return work.deep(subject);
-        });
+        // .then((work) => {
+        //   return work.deep(subject);
+        // });
       })
       .then((result) => {
         console.log(JSON.stringify(result, null, 2));

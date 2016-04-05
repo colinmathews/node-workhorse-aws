@@ -4,9 +4,11 @@ import { Work, WorkResult, StateManager, Workhorse} from 'node-workhorse';
 import AWSConfig from '../models/aws-config';
 import { DynamoDB, config as awsConfig, Credentials } from 'aws-sdk';
 let uuid = require('node-uuid');
+let util = require('util');
 import flatten from '../util/flatten';
 
 const MAX_BATCH_GET = 25;
+const DATE_PREFIX = 'dynamodb-date:';
 
 export function serializeAsItem(data): any {
   if (data === null) {
@@ -20,6 +22,9 @@ export function serializeAsItem(data): any {
   }
   if (typeof(data) === 'number') {
     return { N: data.toString() };
+  }
+  if (util.isDate(data)) {
+    return { S: DATE_PREFIX + data.valueOf() }
   }
   if (data instanceof Array) {
      return { L: data.map((row) => {
@@ -45,8 +50,17 @@ export function serializeAsItem(data): any {
   return { M: result };
 }
 
+function deserializeDate(data:string): Date {
+  let raw = data.replace(DATE_PREFIX, '');
+  let millis = parseInt(raw, 10);
+  return new Date(millis);
+}
+
 export function deserialize(data):any {
   if (data.S) {
+    if (data.S.indexOf(DATE_PREFIX) === 0) {
+      return deserializeDate(data.S);
+    }
     return data.S;
   }
   if (data.NULL) {

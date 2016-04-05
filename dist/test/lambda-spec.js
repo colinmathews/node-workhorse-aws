@@ -5,6 +5,7 @@ require('source-map-support').install({
 require('date-format-lite');
 var path = require('path');
 var fs = require('fs');
+var util = require('util');
 var chai_1 = require('chai');
 var node_workhorse_1 = require('node-workhorse');
 var aws_config_1 = require('../lib/models/aws-config');
@@ -36,6 +37,12 @@ describe('Lambda', function () {
             .then(function (work) {
             if (!work.result || !work.result.ended || work.childrenIDs.length > work.finishedChildrenIDs.length) {
                 return fnWait();
+            }
+            if (work.result && work.result.ended) {
+                console.log('todo: work has a result: ' + util.isDate(work.result.ended));
+            }
+            if (work.childrenIDs.length === work.finishedChildrenIDs.length) {
+                console.log('todo: all children appear finished: ' + JSON.stringify([work.childrenIDs, work.finishedChildrenIDs], null, 2));
             }
             // Wait a bit to ensure everything's been closed up
             return new Promise(function (ok, fail) {
@@ -142,14 +149,14 @@ describe('Lambda', function () {
         });
         it('should check on the logs of a piece of work', function () {
             this.timeout(30 * 1000);
-            var workID = '2016-04-05-233eb3c1-e39a-44d5-9dfd-def68a8296b2';
+            var workID = '2016-04-05-47d2deab-4869-4666-8645-648c70ee6e3f';
             return subject.logger.downloadWorkLogs(workID)
                 .then(function (result) {
                 console.log(result);
-                return subject.state.load(workID)
-                    .then(function (work) {
-                    return work.deep(subject);
-                });
+                return subject.state.load(workID);
+                // .then((work) => {
+                //   return work.deep(subject);
+                // });
             })
                 .then(function (result) {
                 console.log(JSON.stringify(result, null, 2));

@@ -59,6 +59,7 @@ describe('DynamoDB', () => {
         assert.equal(deep.children[0].ancestorLevel, 1);
         assert.equal(deep.children[0].children[0].ancestorLevel, 2);
         assert.equal(deep.children[0].children[0].children[0].ancestorLevel, 3);
+        assert.isTrue(deep.finalizerResult.ended >= deep.children[0].children[0].children[0].result.ended);
       });
     });
 

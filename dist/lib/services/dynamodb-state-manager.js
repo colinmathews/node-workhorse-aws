@@ -4,8 +4,10 @@ var es6_promise_1 = require('es6-promise');
 var node_workhorse_1 = require('node-workhorse');
 var aws_sdk_1 = require('aws-sdk');
 var uuid = require('node-uuid');
+var util = require('util');
 var flatten_1 = require('../util/flatten');
 var MAX_BATCH_GET = 25;
+var DATE_PREFIX = 'dynamodb-date:';
 function serializeAsItem(data) {
     if (data === null) {
         return { NULL: true };
@@ -18,6 +20,9 @@ function serializeAsItem(data) {
     }
     if (typeof (data) === 'number') {
         return { N: data.toString() };
+    }
+    if (util.isDate(data)) {
+        return { S: DATE_PREFIX + data.valueOf() };
     }
     if (data instanceof Array) {
         return { L: data.map(function (row) {
@@ -42,8 +47,16 @@ function serializeAsItem(data) {
     return { M: result };
 }
 exports.serializeAsItem = serializeAsItem;
+function deserializeDate(data) {
+    var raw = data.replace(DATE_PREFIX, '');
+    var millis = parseInt(raw, 10);
+    return new Date(millis);
+}
 function deserialize(data) {
     if (data.S) {
+        if (data.S.indexOf(DATE_PREFIX) === 0) {
+            return deserializeDate(data.S);
+        }
         return data.S;
     }
     if (data.NULL) {
