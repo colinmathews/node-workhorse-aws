@@ -206,7 +206,7 @@ describe('Lambda', () => {
 
     // it('should check on the logs of a piece of work', function() {
     //   this.timeout(30 * 1000);
-    //   let workID = '2016-04-05-8a26eb49-b6f6-4835-90d2-2b1599baf93f';
+    //   let workID = '2016-04-05-1204226c-a0e2-4427-bf09-2cae6204e9fc';
     //   return (<any>subject.logger).downloadWorkLogs(workID)
     //   .then((result) => {
     //     console.log(result);

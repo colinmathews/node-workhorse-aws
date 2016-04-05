@@ -64,7 +64,7 @@ export default class APIGatewayLambdaSource extends LambdaSourceBase {
 
   parseRequest(request): Promise<LambdaEvent> {
     return new Promise((ok, fail) => {
-      ok(new LambdaEvent(request.workID, request.runFinalizer === true));
+      ok(new LambdaEvent(request.workID, request.body.runFinalizer === true));
     });
   }
 }

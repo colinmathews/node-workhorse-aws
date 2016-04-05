@@ -48,14 +48,14 @@ export default class S3Logger implements Logger {
       return Promise.resolve();
     }
     return this.flush()
-    .then(() => {
+      .then(() => {
       return consolidateLogs(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
     });
   }
 
   finalizerRan(work: Work): Promise<any> {
     return this.flush()
-    .then(() => {
+      .then(() => {
       return consolidateLogs(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
     });
   }

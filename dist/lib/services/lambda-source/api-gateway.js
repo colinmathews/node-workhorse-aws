@@ -67,7 +67,7 @@ var APIGatewayLambdaSource = (function (_super) {
     };
     APIGatewayLambdaSource.prototype.parseRequest = function (request) {
         return new Promise(function (ok, fail) {
-            ok(new lambda_event_1.default(request.workID, request.runFinalizer === true));
+            ok(new lambda_event_1.default(request.workID, request.body.runFinalizer === true));
         });
     };
     return APIGatewayLambdaSource;
