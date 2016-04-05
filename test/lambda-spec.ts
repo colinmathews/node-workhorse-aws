@@ -149,15 +149,16 @@ describe('Lambda', () => {
         .then((result) => {
           return result.deep(subject);
         })
-        .then((result: Work) => {
-          console.log('todo: ' + JSON.stringify(result, null, 2));
-          // assert.lengthOf(result.childrenIDs, 1);
-          // assert.lengthOf(result.finishedChildrenIDs, 1);
-          // assert.equal(result.finishedChildrenIDs[0], result.childrenIDs[0]);
-          // assert.isNotNull(result.result);
-          // assert.isNotNull(result.result.ended);
-          // assert.isNull(result.result.error);
-          // assert.isOk(result.finalizerResult);
+        .then((result) => {
+          assert.lengthOf(result.children, 1);
+          assert.isNotNull(result.children[0].result);
+          assert.isNotNull(result.children[0].result.error);
+          assert.isNotNull(result.result);
+          assert.isNotNull(result.result.ended);
+          assert.isNull(result.result.error);
+          assert.isOk(result.finalizerResult);
+          assert.isNull(result.finalizerResult.result);
+          assert.isTrue(result.finalizerResult.ended >= result.children[0].result.ended);
         });
     });
 

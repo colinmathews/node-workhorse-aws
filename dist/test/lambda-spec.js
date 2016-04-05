@@ -138,14 +138,15 @@ describe('Lambda', function () {
                 return result.deep(subject);
             })
                 .then(function (result) {
-                console.log('todo: ' + JSON.stringify(result, null, 2));
-                // assert.lengthOf(result.childrenIDs, 1);
-                // assert.lengthOf(result.finishedChildrenIDs, 1);
-                // assert.equal(result.finishedChildrenIDs[0], result.childrenIDs[0]);
-                // assert.isNotNull(result.result);
-                // assert.isNotNull(result.result.ended);
-                // assert.isNull(result.result.error);
-                // assert.isOk(result.finalizerResult);
+                chai_1.assert.lengthOf(result.children, 1);
+                chai_1.assert.isNotNull(result.children[0].result);
+                chai_1.assert.isNotNull(result.children[0].result.error);
+                chai_1.assert.isNotNull(result.result);
+                chai_1.assert.isNotNull(result.result.ended);
+                chai_1.assert.isNull(result.result.error);
+                chai_1.assert.isOk(result.finalizerResult);
+                chai_1.assert.isNull(result.finalizerResult.result);
+                chai_1.assert.isTrue(result.finalizerResult.ended >= result.children[0].result.ended);
             });
         });
         it('should handle lots of requests all at once', function () {
