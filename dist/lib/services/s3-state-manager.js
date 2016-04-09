@@ -49,6 +49,21 @@ var S3StateManager = (function () {
             }
         });
     };
+    S3StateManager.prototype.saveWorkStarted = function (work) {
+        return this.save(work);
+    };
+    S3StateManager.prototype.saveWorkEnded = function (work) {
+        return this.save(work);
+    };
+    S3StateManager.prototype.saveFinalizerStarted = function (work) {
+        return this.save(work);
+    };
+    S3StateManager.prototype.saveFinalizerEnded = function (work) {
+        return this.save(work);
+    };
+    S3StateManager.prototype.saveCreatedChildren = function (work) {
+        return this.save(work);
+    };
     S3StateManager.prototype.load = function (id) {
         return this.readDB()
             .then(function () {

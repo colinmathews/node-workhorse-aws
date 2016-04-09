@@ -6,7 +6,7 @@
     "aws-sdk": "^2.2.36",
     "es6-promise": "^3.1.2",
     "node-uuid": "^1.4.7",
-    "node-workhorse": "git://github.com/colinmathews/node-workhorse.git#4de5475679150662f09d4dae079c1227e2e5de42",
+    "node-workhorse": "1.0.2",
     "s3-append": "^1.0.2",
     "source-map-support": "^0.4.0"
   },

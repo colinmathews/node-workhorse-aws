@@ -123,6 +123,21 @@ var DynamoDBStateManager = (function () {
         });
         return es6_promise_1.Promise.all(promises);
     };
+    DynamoDBStateManager.prototype.saveWorkStarted = function (work) {
+        return this.save(work);
+    };
+    DynamoDBStateManager.prototype.saveWorkEnded = function (work) {
+        return this.save(work);
+    };
+    DynamoDBStateManager.prototype.saveFinalizerStarted = function (work) {
+        return this.save(work);
+    };
+    DynamoDBStateManager.prototype.saveFinalizerEnded = function (work) {
+        return this.save(work);
+    };
+    DynamoDBStateManager.prototype.saveCreatedChildren = function (work) {
+        return this.save(work);
+    };
     DynamoDBStateManager.prototype.load = function (id) {
         var _this = this;
         return new es6_promise_1.Promise(function (ok, fail) {

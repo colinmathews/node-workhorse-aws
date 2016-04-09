@@ -130,6 +130,26 @@ export default class DynamoDBStateManager implements StateManager {
     return Promise.all(promises);
   }
 
+  saveWorkStarted(work: Work): Promise<any> {
+    return this.save(work);
+  }
+
+  saveWorkEnded(work: Work): Promise<any> {
+    return this.save(work);
+  }
+
+  saveFinalizerStarted(work: Work): Promise<any> {
+    return this.save(work);
+  }
+
+  saveFinalizerEnded(work: Work): Promise<any> {
+    return this.save(work);
+  }
+
+  saveCreatedChildren(work: Work): Promise<any> {
+    return this.save(work);
+  }
+
   load(id: string): Promise<Work> {
     return new Promise((ok, fail) => {
       let request = {
