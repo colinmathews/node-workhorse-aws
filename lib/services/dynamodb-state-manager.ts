@@ -1,6 +1,6 @@
-require('date-format-lite'); 
+require('date-format-lite');
 import { Promise } from 'es6-promise';
-import { Work, WorkResult, StateManager, Workhorse} from 'node-workhorse';
+import { Work, IStateManager, Workhorse} from 'node-workhorse';
 import AWSConfig from '../models/aws-config';
 import { DynamoDB, config as awsConfig, Credentials } from 'aws-sdk';
 let uuid = require('node-uuid');
@@ -10,7 +10,8 @@ import flatten from '../util/flatten';
 const MAX_BATCH_GET = 25;
 const DATE_PREFIX = 'dynamodb-date:';
 
-export function serializeAsItem(data): any {
+export function serializeAsItem(data: any): any {
+  'use strict';
   if (data === null) {
     return { NULL: true };
   }
@@ -24,7 +25,7 @@ export function serializeAsItem(data): any {
     return { N: data.toString() };
   }
   if (util.isDate(data)) {
-    return { S: DATE_PREFIX + data.valueOf() }
+    return { S: DATE_PREFIX + data.valueOf() };
   }
   if (data instanceof Array) {
      return { L: data.map((row) => {
@@ -38,7 +39,7 @@ export function serializeAsItem(data): any {
     return;
   }
   if (typeof(data) !== 'object') {
-    throw new Error("Unexpected type: " + typeof(data));
+    throw new Error('Unexpected type: ' + typeof(data));
   }
 
   let result = {};
@@ -50,13 +51,15 @@ export function serializeAsItem(data): any {
   return { M: result };
 }
 
-function deserializeDate(data:string): Date {
+function deserializeDate(data: string): Date {
+  'use strict';
   let raw = data.replace(DATE_PREFIX, '');
   let millis = parseInt(raw, 10);
   return new Date(millis);
 }
 
-export function deserialize(data):any {
+export function deserialize(data: any): any {
+  'use strict';
   if (data.S) {
     if (data.S.indexOf(DATE_PREFIX) === 0) {
       return deserializeDate(data.S);
@@ -78,7 +81,7 @@ export function deserialize(data):any {
   if (data.L) {
     return data.L.map((row) => {
       return deserialize(row);
-    })
+    });
   }
   if (data.M) {
     let result = {};
@@ -89,26 +92,26 @@ export function deserialize(data):any {
     });
     return result;
   }
-  throw new Error("Unexpected data to deserialize: " + JSON.stringify(data, null, 2));
+  throw new Error('Unexpected data to deserialize: ' + JSON.stringify(data, null, 2));
 }
 
-export default class DynamoDBStateManager implements StateManager {
-  workhorse:Workhorse;
-  db:any;
+export default class DynamoDBStateManager implements IStateManager {
+  workhorse: Workhorse;
+  db: any;
 
-  constructor(public config:AWSConfig) {
+  constructor(public config: AWSConfig) {
     awsConfig.update({
       credentials: new Credentials(config.accessKeyId, config.secretAccessKey),
       region: config.region
     });
-    this.db = <any>new DynamoDB();
+    this.db = new DynamoDB() as any;
   }
 
-  save(work:Work): Promise<any> {
+  save(work: Work): Promise<any> {
     return new Promise((ok, fail) => {
       if (!work.id) {
         let now = new Date();
-        work.id = (<any>now).format('YYYY-MM-DD-') + uuid.v4();
+        work.id = (now as any).format('YYYY-MM-DD-') + uuid.v4();
       }
       let request = {
         TableName: this.config.dynamoDBWorkTable,
@@ -123,10 +126,10 @@ export default class DynamoDBStateManager implements StateManager {
     });
   }
 
-  saveAll(work:Work[]): Promise<any> {
+  saveAll(work: Work[]): Promise<any> {
     let promises = work.map((row) => {
       return this.save(row);
-    })
+    });
     return Promise.all(promises);
   }
 
@@ -159,7 +162,7 @@ export default class DynamoDBStateManager implements StateManager {
             S: id
           }
         }
-      }
+      };
       this.db.getItem(request, (err, data) => {
         if (err) {
           return fail(err);
@@ -172,7 +175,7 @@ export default class DynamoDBStateManager implements StateManager {
     });
   }
 
-  loadAll(ids:string[]): Promise<Work[]> {
+  loadAll(ids: string[]): Promise<Work[]> {
     let requests = [];
     for (let i = 0; i < ids.length; i += MAX_BATCH_GET) {
       requests.push(ids.slice(i, MAX_BATCH_GET));
@@ -181,7 +184,7 @@ export default class DynamoDBStateManager implements StateManager {
       return this.batchGet(row);
     });
     return Promise.all(promises)
-    .then((result:Work[][]) => {
+    .then((result: Work[][]) => {
       return flatten(result);
     });
   }
@@ -195,7 +198,7 @@ export default class DynamoDBStateManager implements StateManager {
       });
   }
 
-  private serializeWork(work:Work) {
+  private serializeWork(work: Work): any {
     return serializeAsItem({
       id: work.id,
       workLoadHref: work.workLoadHref,
@@ -209,16 +212,16 @@ export default class DynamoDBStateManager implements StateManager {
     }).M;
   }
 
-  private deserializeWork(data): Work {
+  private deserializeWork(data: any): Work {
     let work = new Work();
     let raw = deserialize({ M : data });
     Object.keys(raw).forEach((key) => {
       work[key] = raw[key];
-    })
+    });
     return work;
   }
 
-  private batchGet(ids:string[]): Promise<Work[]> {
+  private batchGet(ids: string[]): Promise<Work[]> {
     return new Promise((ok, fail) => {
       let keys = ids.map((row) => {
         return {
@@ -238,7 +241,7 @@ export default class DynamoDBStateManager implements StateManager {
         let tableData = data.Responses[this.config.dynamoDBWorkTable];
         let works = tableData.map((row) => {
           return this.deserializeWork(row);
-        })
+        });
         ok(works);
       });
     });

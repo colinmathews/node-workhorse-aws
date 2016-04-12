@@ -2,12 +2,13 @@ import { Promise } from 'es6-promise';
 import { Work, Workhorse } from 'node-workhorse';
 import AWSConfig from '../models/aws-config';
 import { S3 } from 'aws-sdk';
-import { createS3, download, upload, deleteFile } from'./aws-util'
+import { createS3, download, upload, deleteFile } from'./aws-util';
 import padLeft from './pad-left';
 import flatten from './flatten';
 import logFilePathBase from './log-file-naming';
 
-function addPossiblelogKeysForWork(s3KeyPrefix:string, list:any[], work:any) {
+function addPossiblelogKeysForWork(s3KeyPrefix: string, list: any[], work: any): void {
+  'use strict';
   list.push({
     work: work,
     inside: logFilePathBase(s3KeyPrefix, work.id) + '.txt',
@@ -15,54 +16,64 @@ function addPossiblelogKeysForWork(s3KeyPrefix:string, list:any[], work:any) {
   });
 }
 
-function addToLogKeys(list:any[], deepWork, s3KeyPrefix:string) {
+function addToLogKeys(list: any[], deepWork: any, s3KeyPrefix: string): void {
+  'use strict';
   addPossiblelogKeysForWork(s3KeyPrefix, list, deepWork);
   deepWork.children.forEach((child) => {
     addToLogKeys(list, child, s3KeyPrefix);
   });
 }
 
-function downloadLogs(config:AWSConfig, s3:S3, list:any[]): Promise<any[]> {
-  let promises = list.reduce((result, row) => {
-    let inside, outside;
-    let promise = download(config, s3, row.inside)
-    .then((result) => {
-      inside = result;
-      return download(config, s3, row.outside);
-    })
-    .then((result) => {
-      outside = result;
-      return {
-        work: row.work,
-        contents: (inside || '') + (outside || ''),
-        inside: row.inside,
-        outside: row.outside,
-        insideExists: row.inside !== null,
-        outsideExists: row.outside !== null
-      };
-    });
-    result.push(promise);
-    return result;
-  }, []);
+function downloadLogs(config: AWSConfig, s3: S3, list: any[]): Promise<any[]> {
+  'use strict';
+  let promises = list.reduce(
+    (result, row) => {
+      let inside, outside;
+      let promise = download(config, s3, row.inside)
+      .then((inner) => {
+        inside = inner;
+        return download(config, s3, row.outside);
+      })
+      .then((inner) => {
+        outside = inner;
+        return {
+          work: row.work,
+          contents: (inside || '') + (outside || ''),
+          inside: row.inside,
+          outside: row.outside,
+          insideExists: row.inside !== null,
+          outsideExists: row.outside !== null
+        };
+      });
+      result.push(promise);
+      return result;
+    },
+    []
+  );
   return Promise.all(promises);
 }
 
-function consolidate(config:AWSConfig, s3:S3, list:any[]): Promise<any> {
-  let promises = list.reduce((result, row) => {
-    if (!row.work.parentID) {
-      let logs = produceLogs(list, row, 0);
-      let promise = cleanUpLogs(config, s3, row, logs);
-      result.push(promise);
-    }
-    return result;
-  }, []);
+function consolidate(config: AWSConfig, s3: S3, list: any[]): Promise<any> {
+  'use strict';
+  let promises = list.reduce(
+    (result, row) => {
+      if (!row.work.parentID) {
+        let logs = produceLogs(list, row, 0);
+        let promise = cleanUpLogs(config, s3, row, logs);
+        result.push(promise);
+      }
+      return result;
+    },
+    []
+  );
   return Promise.all(promises)
   .then(() => {
     return deleteChildrenLogs(config, s3, list);
-  })
+  });
 }
 
-function cleanUpLogs(config:AWSConfig, s3:S3, row, logs) {
+function cleanUpLogs(config: AWSConfig, s3: S3, row: any, logs: string[]): Promise<any> {
+  'use strict';
   return upload(config, s3, row.inside, logs.join('\n'))
   .then(() => {
     if (row.outsideExists) {
@@ -71,7 +82,8 @@ function cleanUpLogs(config:AWSConfig, s3:S3, row, logs) {
   });
 }
 
-function deleteLogs(config:AWSConfig, s3:S3, row) {
+function deleteLogs(config: AWSConfig, s3: S3, row: any): Promise<any> {
+  'use strict';
   if (row.insideExists) {
     return deleteFile(config, s3, row.inside)
     .then(() => {
@@ -88,25 +100,31 @@ function deleteLogs(config:AWSConfig, s3:S3, row) {
   }
 }
 
-function deleteChildrenLogs(config:AWSConfig, s3:S3, list:any[]) {
-  let promises = list.reduce((result, row) => {
-    if (row.work.parentID) {
-      let promise = deleteLogs(config, s3, row);
-      result.push(promise);
-    }
-    return result;
-  }, []);
+function deleteChildrenLogs(config: AWSConfig, s3: S3, list: any[]): Promise< any > {
+  'use strict';
+  let promises = list.reduce(
+    (result, row) => {
+      if (row.work.parentID) {
+        let promise = deleteLogs(config, s3, row);
+        result.push(promise);
+      }
+      return result;
+    },
+    []
+  );
   return Promise.all(promises);
 }
 
-function findWorkLogs(list:any[], work:any) {
+function findWorkLogs(list: any[], work: any): any {
+  'use strict';
   let found = list.filter((row) => {
     return row.work.id === work.id;
   });
   return found.length === 0 ? null : found[0];
 }
 
-function sortLogs(text:string): string[] {
+function sortLogs(text: string): string[] {
+  'use strict';
   let lines = text.split('\n');
   sortByTimestampFirstIfExists(lines);
   return lines.filter((row) => {
@@ -114,17 +132,18 @@ function sortLogs(text:string): string[] {
   });
 }
 
-function sortByTimestampFirstIfExists(list:string[]) {
+function sortByTimestampFirstIfExists(list: string[]): string[] {
+  'use strict';
   let reg = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}/;
   list.sort((a, b) => {
     let matchA = a.match(reg);
     let matchB = b.match(reg);
-    if (!matchA || !matchB || matchA.length == 0 || matchB.length === 0) {
+    if (!matchA || !matchB || matchA.length === 0 || matchB.length === 0) {
       return a.localeCompare(b);
     }
 
-    let dateA = (<any>matchA[0]).date();
-    let dateB = (<any>matchB[0]).date();
+    let dateA = (matchA[0] as any).date();
+    let dateB = (matchB[0] as any).date();
     if (dateA < dateB) {
       return -1;
     }
@@ -146,14 +165,15 @@ function sortByTimestampFirstIfExists(list:string[]) {
   return list;
 }
 
-export function produceLogs(list:any[], row:any, indent:number = 0, spacesPerIndent:number = 5):string[] {
+export function produceLogs(list: any[], row: any, indent: number = 0, spacesPerIndent: number = 5): string[] {
+  'use strict';
   let logs = sortLogs(row.contents);
   let pad = (text, indentation) => {
     return padLeft(text, spacesPerIndent * indentation);
   };
   logs = logs.map((logRow) => {
     return pad(logRow, indent);
-  })
+  });
   let childLogs = row.work.children.map((child) => {
     let childRow = findWorkLogs(list, child);
     let produced = produceLogs(list, childRow, indent + 1, spacesPerIndent);
@@ -167,13 +187,14 @@ export function produceLogs(list:any[], row:any, indent:number = 0, spacesPerInd
   return logs.concat(flatten(childLogs));
 };
 
-export default function(config: AWSConfig, workhorse:Workhorse, work:Work, s3KeyPrefix:string): Promise<any> {
-  let list:any[] = [];
+export default function(config: AWSConfig, workhorse: Workhorse, work: Work, s3KeyPrefix: string): Promise<any> {
+  'use strict';
+  let list: any[] = [];
   let s3 = createS3(config);
   return work.deep(workhorse)
   .then((deepWork) => {
     addToLogKeys(list, deepWork, s3KeyPrefix);
-    return downloadLogs(config, s3, list)
+    return downloadLogs(config, s3, list);
   })
   .then((rows) => {
     return consolidate(config, s3, rows);

@@ -1,61 +1,60 @@
 require('date-format-lite');
 import { Promise } from 'es6-promise';
-import { Work, Logger, Workhorse, LogLevel, ConsoleLogger } from 'node-workhorse';
+import { Work, ILogger, Workhorse, LogLevel, ConsoleLogger } from 'node-workhorse';
 import AWSConfig from '../models/aws-config';
 import { S3Config as LoggerS3Config, S3Append } from 's3-append';
 import consolidateLogs from '../util/consolidate-logs';
-import { createS3, download } from'../util/aws-util'
+import { createS3, download } from'../util/aws-util';
 import logFilePathBase from '../util/log-file-naming';
 
-export default class S3Logger implements Logger {
+export default class S3Logger implements ILogger {
   workhorse: Workhorse;
   level: LogLevel;
   private generalKey: string;
   private workKeyPrefix: string;
-  private s3Config:LoggerS3Config;
-  private logger:S3Append;
-  private outsideWorkToLoggerMap = {};
-  private insideWorkToLoggerMap = {};
-  private endingWorkPromises:Promise<any>[] = [];
+  private s3Config: LoggerS3Config;
+  private logger: S3Append;
+  private outsideWorkToLoggerMap: any = {};
+  private insideWorkToLoggerMap: any = {};
 
-  constructor(public originalConfig:AWSConfig) {
+  constructor(public originalConfig: AWSConfig) {
     this.s3Config = new LoggerS3Config(originalConfig);
     let now = new Date();
     let baseKey = originalConfig.s3LoggerKeyPrefix.replace(/\/?$/gi, '');
-    let folder = (<any>now).format('YYYY-MM-DD');
-    let uniqueID = (<any>now).format('hh:mm:ss.SS');
+    let folder = (now as any).format('YYYY-MM-DD');
+    let uniqueID = (now as any).format('hh:mm:ss.SS');
     this.generalKey = `${baseKey}/${folder}/${uniqueID}.txt`;
     this.workKeyPrefix = `${baseKey}/work/`;
     this.logger = new S3Append(this.s3Config, this.generalKey);
   }
 
-  log (message: string, level?: LogLevel|Error) {
+  log (message: string, level?: LogLevel|Error): void {
     this.doLog(null, this.logger, message, level);
   }
 
-  logInsideWork (work: Work, message: string, level?: LogLevel|Error) {
+  logInsideWork(work: Work, message: string, level?: LogLevel | Error): void {
     let logger = this.getWorkLogger(true, work);
     this.doLog(work, logger, message, level);
   }
 
-  logOutsideWork (work: Work, message: string, level?: LogLevel|Error) {
+  logOutsideWork(work: Work, message: string, level?: LogLevel | Error): void {
     let logger = this.getWorkLogger(false, work);
     this.doLog(work, logger, message, level);
   }
 
-  workEnded (work:Work): Promise<any> {
+  workEnded (work: Work): Promise<any> {
     if (work.parentID || work.childrenIDs.length > 0) {
       return Promise.resolve();
     }
     return this.flush()
-      .then(() => {
+    .then(() => {
       return consolidateLogs(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
     });
   }
 
   finalizerRan(work: Work): Promise<any> {
     return this.flush()
-      .then(() => {
+    .then(() => {
       return consolidateLogs(this.originalConfig, this.workhorse, work, this.workKeyPrefix);
     });
   }
@@ -75,13 +74,13 @@ export default class S3Logger implements Logger {
     return Promise.all(promises);
   }
 
-  downloadWorkLogs(workID:string): Promise<string> {
+  downloadWorkLogs(workID: string): Promise<string> {
     let s3 = createS3(this.originalConfig);
     let key = logFilePathBase(this.workKeyPrefix, workID) + '.txt';
     return download(this.originalConfig, s3, key);
   }
 
-  private doLog(work: Work, logger: S3Append, message: string, level?: LogLevel | Error) {
+  private doLog(work: Work, logger: S3Append, message: string, level?: LogLevel | Error): void {
     let messageWithWorkID = work ? `${message}: ${work.id}` : message;
     let [formattedMessage, parsedLevel] = ConsoleLogger.formatMessage(messageWithWorkID, level);
 
@@ -98,7 +97,7 @@ export default class S3Logger implements Logger {
     logger.appendWithDate(formattedMessage);
   }
 
-  private getWorkLogger(isInside:boolean, work:Work): S3Append {
+  private getWorkLogger(isInside: boolean, work: Work): S3Append {
     let map = isInside ? this.insideWorkToLoggerMap : this.outsideWorkToLoggerMap;
     let found = map[work.id];
     if (!found) {

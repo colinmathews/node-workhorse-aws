@@ -10,6 +10,35 @@ var S3StateManager = (function () {
             region: config.region
         });
     }
+    S3StateManager.translateNumericIDIntoID = function (id) {
+        var now = new Date();
+        return now.format('YYYY-MM-DD-') + id.toString();
+    };
+    S3StateManager.calculateNextID = function () {
+        if (S3StateManager.nextNumericID) {
+            S3StateManager.nextNumericID++;
+            return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
+        }
+        var state = S3StateManager.stateMap;
+        if (!state) {
+            S3StateManager.nextNumericID = 1;
+        }
+        else {
+            var previousID = S3StateManager.nextNumericID;
+            S3StateManager.nextNumericID = Object.keys(state).reduce(function (result, key) {
+                var parsedKey = key.substring('YYYY-MM-DD-'.length);
+                var id = parseInt(parsedKey, 10);
+                if (!isNaN(id) && id >= result) {
+                    return id + 1;
+                }
+                return result;
+            }, 1);
+            if (S3StateManager.nextNumericID === previousID) {
+                throw new Error('Expected id to be incremented: ' + S3StateManager.nextNumericID);
+            }
+        }
+        return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
+    };
     S3StateManager.prototype.save = function (work) {
         var _this = this;
         return this.readDB()
@@ -19,20 +48,6 @@ var S3StateManager = (function () {
                 return _this.writeDB();
             }
         });
-    };
-    S3StateManager.prototype.hasChanged = function (work) {
-        var previous = S3StateManager.stateMap[work.id];
-        return !previous || JSON.stringify(previous) !== JSON.stringify(work);
-    };
-    S3StateManager.prototype.saveToMap = function (work) {
-        if (!work.id) {
-            work.id = S3StateManager.nextID;
-            if (!work.id) {
-                throw new Error("Expected work to have an id");
-            }
-            S3StateManager.nextID = S3StateManager.calculateNextID();
-        }
-        S3StateManager.stateMap[work.id] = work.copy();
     };
     S3StateManager.prototype.saveAll = function (work) {
         var _this = this;
@@ -89,6 +104,20 @@ var S3StateManager = (function () {
             return isDone;
         });
     };
+    S3StateManager.prototype.hasChanged = function (work) {
+        var previous = S3StateManager.stateMap[work.id];
+        return !previous || JSON.stringify(previous) !== JSON.stringify(work);
+    };
+    S3StateManager.prototype.saveToMap = function (work) {
+        if (!work.id) {
+            work.id = S3StateManager.nextID;
+            if (!work.id) {
+                throw new Error('Expected work to have an id');
+            }
+            S3StateManager.nextID = S3StateManager.calculateNextID();
+        }
+        S3StateManager.stateMap[work.id] = work.copy();
+    };
     S3StateManager.prototype.writeDB = function () {
         var _this = this;
         var s3 = new aws_sdk_1.S3();
@@ -120,7 +149,7 @@ var S3StateManager = (function () {
         var key = this.config.s3StateKeyPrefix + ".json";
         var args = {
             Bucket: this.config.bucket,
-            Key: decodeURIComponent(key.replace(/\+/g, " "))
+            Key: decodeURIComponent(key.replace(/\+/g, ' '))
         };
         return new es6_promise_1.Promise(function (ok, fail) {
             _this.workhorse.logger.log("Loading state database from S3: " + key + "...");
@@ -141,35 +170,6 @@ var S3StateManager = (function () {
                 ok(S3StateManager.stateMap);
             });
         });
-    };
-    S3StateManager.translateNumericIDIntoID = function (id) {
-        var now = new Date();
-        return now.format('YYYY-MM-DD-') + id.toString();
-    };
-    S3StateManager.calculateNextID = function () {
-        if (S3StateManager.nextNumericID) {
-            S3StateManager.nextNumericID++;
-            return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
-        }
-        var state = S3StateManager.stateMap;
-        if (!state) {
-            S3StateManager.nextNumericID = 1;
-        }
-        else {
-            var previousID = S3StateManager.nextNumericID;
-            S3StateManager.nextNumericID = Object.keys(state).reduce(function (result, key) {
-                var parsedKey = key.substring('YYYY-MM-DD-'.length);
-                var id = parseInt(parsedKey, 10);
-                if (!isNaN(id) && id >= result) {
-                    return id + 1;
-                }
-                return result;
-            }, 1);
-            if (S3StateManager.nextNumericID === previousID) {
-                throw new Error("Expected id to be incremented: " + S3StateManager.nextNumericID);
-            }
-        }
-        return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
     };
     S3StateManager.stateMap = null;
     S3StateManager.nextNumericID = 0;

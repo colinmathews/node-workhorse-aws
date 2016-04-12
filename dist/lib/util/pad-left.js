@@ -1,5 +1,6 @@
 "use strict";
 function default_1(text, chars, padChar) {
+    'use strict';
     if (padChar === void 0) { padChar = ' '; }
     for (var i = 0; i < chars; i++) {
         text = padChar + text;

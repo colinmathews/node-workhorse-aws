@@ -6,7 +6,7 @@
     "aws-sdk": "^2.2.36",
     "es6-promise": "^3.1.2",
     "node-uuid": "^1.4.7",
-    "node-workhorse": "1.0.2",
+    "node-workhorse": "1.1.0",
     "s3-append": "^1.0.2",
     "source-map-support": "^0.4.0"
   },
@@ -16,12 +16,13 @@
     "deploy-lambda": "^1.2.0",
     "mocha": "^2.4.5",
     "tsc": "^1.20150623.0",
+    "tslint": "^3.7.3",
     "typescript": "^1.7.5",
     "typings": "^0.6.8",
     "uncommitted": "^1.0.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run typings install && npm run tsc",
+    "build": "npm run clean && npm run typings install && npm run tsc && npm run lint",
     "predopublish": "npm run build && uncommitted",
     "dopublish": "npm publish",
     "tsc": "tsc",
@@ -31,6 +32,8 @@
     "pretest": "npm run build",
     "test": "mocha",
     "typings": "typings",
+    "lint": "tslint lib/**/*.ts test/**.*.ts index.ts",
+    "lint:q": "tslint --force lib/**/*.ts test/**.*.ts index.ts",
     "lambda": "uncommitted && deploy-lambda deploy -c deploy-lambda.json",
     "lambda-permissions": "deploy-lambda permissions -c deploy-lambda.json"
   },

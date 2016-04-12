@@ -11,7 +11,6 @@ var S3Logger = (function () {
         this.originalConfig = originalConfig;
         this.outsideWorkToLoggerMap = {};
         this.insideWorkToLoggerMap = {};
-        this.endingWorkPromises = [];
         this.s3Config = new s3_append_1.S3Config(originalConfig);
         var now = new Date();
         var baseKey = originalConfig.s3LoggerKeyPrefix.replace(/\/?$/gi, '');
