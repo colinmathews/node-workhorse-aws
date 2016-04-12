@@ -2,6 +2,7 @@
 var es6_promise_1 = require('es6-promise');
 var aws_sdk_1 = require('aws-sdk');
 function createS3(config) {
+    'use strict';
     return new aws_sdk_1.S3({
         credentials: new aws_sdk_1.Credentials(config.accessKeyId, config.secretAccessKey),
         region: config.region,
@@ -10,10 +11,11 @@ function createS3(config) {
 }
 exports.createS3 = createS3;
 function download(config, s3, key) {
+    'use strict';
     return new es6_promise_1.Promise(function (ok, fail) {
         var args = {
             Bucket: config.bucket,
-            Key: decodeURIComponent(key.replace(/\+/g, " "))
+            Key: decodeURIComponent(key.replace(/\+/g, ' '))
         };
         s3.getObject(args, function (err, data) {
             if (err) {
@@ -29,6 +31,7 @@ function download(config, s3, key) {
 }
 exports.download = download;
 function upload(config, s3, key, data, contentType, acl) {
+    'use strict';
     if (contentType === void 0) { contentType = 'text/plain'; }
     if (acl === void 0) { acl = 'private'; }
     return new es6_promise_1.Promise(function (ok, fail) {
@@ -39,7 +42,7 @@ function upload(config, s3, key, data, contentType, acl) {
             Body: new Buffer(data),
             ACL: acl
         };
-        s3.putObject(args, function (err, data) {
+        s3.putObject(args, function (err, result) {
             if (err) {
                 return fail(err);
             }
@@ -49,6 +52,7 @@ function upload(config, s3, key, data, contentType, acl) {
 }
 exports.upload = upload;
 function deleteFile(config, s3, key) {
+    'use strict';
     return new es6_promise_1.Promise(function (ok, fail) {
         var args = {
             Bucket: config.bucket,

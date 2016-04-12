@@ -1,4 +1,4 @@
 export default class LambdaEvent {
-  constructor(public workID:string, public runFinalizer:boolean) {
+  constructor(public workID: string, public runFinalizer: boolean) {
   }
 }

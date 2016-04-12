@@ -2,7 +2,8 @@ import { Promise } from 'es6-promise';
 import AWSConfig from '../models/aws-config';
 import { S3, Credentials } from 'aws-sdk';
 
-export function createS3(config:AWSConfig):S3 {
+export function createS3(config: AWSConfig): S3 {
+  'use strict';
   return new S3({
     credentials: new Credentials(config.accessKeyId, config.secretAccessKey),
     region: config.region,
@@ -10,11 +11,12 @@ export function createS3(config:AWSConfig):S3 {
   });
 }
 
-export function download(config:AWSConfig, s3:S3, key:string): Promise<string> {
+export function download(config: AWSConfig, s3: S3, key: string): Promise<string> {
+  'use strict';
   return new Promise((ok, fail) => {
     let args = {
       Bucket: config.bucket,
-      Key: decodeURIComponent(key.replace(/\+/g, " "))
+      Key: decodeURIComponent(key.replace(/\+/g, ' '))
     };
     s3.getObject(args, (err, data) => {
       if (err) {
@@ -29,7 +31,14 @@ export function download(config:AWSConfig, s3:S3, key:string): Promise<string> {
   });
 }
 
-export function upload(config:AWSConfig, s3:S3, key:string, data:string, contentType:string = 'text/plain', acl:string = 'private'): Promise<any> {
+export function upload(
+  config: AWSConfig,
+  s3: S3,
+  key: string,
+  data: string,
+  contentType: string = 'text/plain',
+  acl: string = 'private'): Promise<any> {
+  'use strict';
   return new Promise((ok, fail) => {
     let args = {
       Bucket: config.bucket,
@@ -38,7 +47,7 @@ export function upload(config:AWSConfig, s3:S3, key:string, data:string, content
       Body : new Buffer(data),
       ACL : acl
     };
-    s3.putObject(args, (err, data) => {
+    s3.putObject(args, (err, result) => {
       if (err) {
         return fail(err);
       }
@@ -47,13 +56,14 @@ export function upload(config:AWSConfig, s3:S3, key:string, data:string, content
   });
 }
 
-export function deleteFile(config:AWSConfig, s3:S3, key:string): Promise<any> {
+export function deleteFile(config: AWSConfig, s3: S3, key: string): Promise<any> {
+  'use strict';
   return new Promise((ok, fail) => {
     let args = {
       Bucket: config.bucket,
       Key: key
     };
-    (<any>s3).deleteObject(args, (err, data) => {
+    (s3 as any).deleteObject(args, (err, data) => {
       if (err) {
         return fail(err);
       }

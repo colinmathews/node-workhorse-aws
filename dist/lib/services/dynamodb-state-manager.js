@@ -9,6 +9,7 @@ var flatten_1 = require('../util/flatten');
 var MAX_BATCH_GET = 25;
 var DATE_PREFIX = 'dynamodb-date:';
 function serializeAsItem(data) {
+    'use strict';
     if (data === null) {
         return { NULL: true };
     }
@@ -36,7 +37,7 @@ function serializeAsItem(data) {
         return;
     }
     if (typeof (data) !== 'object') {
-        throw new Error("Unexpected type: " + typeof (data));
+        throw new Error('Unexpected type: ' + typeof (data));
     }
     var result = {};
     Object.keys(data).forEach(function (key) {
@@ -48,11 +49,13 @@ function serializeAsItem(data) {
 }
 exports.serializeAsItem = serializeAsItem;
 function deserializeDate(data) {
+    'use strict';
     var raw = data.replace(DATE_PREFIX, '');
     var millis = parseInt(raw, 10);
     return new Date(millis);
 }
 function deserialize(data) {
+    'use strict';
     if (data.S) {
         if (data.S.indexOf(DATE_PREFIX) === 0) {
             return deserializeDate(data.S);
@@ -85,7 +88,7 @@ function deserialize(data) {
         });
         return result_1;
     }
-    throw new Error("Unexpected data to deserialize: " + JSON.stringify(data, null, 2));
+    throw new Error('Unexpected data to deserialize: ' + JSON.stringify(data, null, 2));
 }
 exports.deserialize = deserialize;
 var DynamoDBStateManager = (function () {

@@ -1,13 +1,13 @@
 import { Promise } from 'es6-promise';
-import { Route, Work, Router, StateManager, Workhorse } from 'node-workhorse';
+import { Route, Work, IRouter, Workhorse } from 'node-workhorse';
 import LambdaEvent from '../models/lambda-event';
-import AWSConfig from '../models/aws-config'
+import AWSConfig from '../models/aws-config';
 import LambdaSourceType from '../models/lambda-source-type';
 import LambdaSourceBase from './lambda-source/base';
 import S3LambdaSource from './lambda-source/s3';
 import APIGatewayLambdaSource from './lambda-source/api-gateway';
 
-export default class LambdaRouter implements Router {
+export default class LambdaRouter implements IRouter {
   workhorse: Workhorse;
   constructor(public config: AWSConfig) {
   }
@@ -26,19 +26,19 @@ export default class LambdaRouter implements Router {
     });
   }
 
-  sendWorkToLambda(event:LambdaEvent): Promise<any> {
+  sendWorkToLambda(event: LambdaEvent): Promise<any> {
     let source = this.getSourceForRouting();
     return source.sendWorkToLambda(event);
   }
 
-  handleLambdaRequest(request, context): Promise<any> {
+  handleLambdaRequest(request: any, context: any): Promise<any> {
     let [source, input] = this.getSourceFromRequest(request);
-    let parsed:LambdaEvent;
-    
+    let parsed: LambdaEvent;
+
     return source.parseRequest(input)
     .then((result) => {
       parsed = result;
-      return this.workhorse.state.load(parsed.workID)
+      return this.workhorse.state.load(parsed.workID);
     })
     .then((work: Work) => {
       if (parsed.runFinalizer) {
@@ -67,7 +67,7 @@ export default class LambdaRouter implements Router {
     }
   }
 
-  private getSourceFromRequest(request): [LambdaSourceBase, any] {
+  private getSourceFromRequest(request: any): [LambdaSourceBase, any] {
     if (request.Records) {
       if (request.Records.length !== 1) {
         throw new Error(`Expected lambda request.Records to have exactly one record. Found ${request.Records.length}`);
@@ -78,7 +78,7 @@ export default class LambdaRouter implements Router {
       }
       throw new Error(`Unexpected request: ${JSON.stringify(record, null, 2)}`);
     }
-    
+
     return [new APIGatewayLambdaSource(this.config), request];
   }
 

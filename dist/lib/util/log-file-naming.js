@@ -1,5 +1,6 @@
 "use strict";
 function logFilePathBase(workKeyPrefix, workID) {
+    'use strict';
     var first = workID.substring(0, 7);
     return "" + workKeyPrefix + first + "/" + workID;
 }
