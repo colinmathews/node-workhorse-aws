@@ -7,7 +7,7 @@
     "es6-promise": "^3.1.2",
     "node-uuid": "^1.4.7",
     "node-workhorse": "1.1.0",
-    "s3-append": "^1.0.2",
+    "s3-append": "^1.1.0",
     "source-map-support": "^0.4.0"
   },
   "main": "dist/index.js",
