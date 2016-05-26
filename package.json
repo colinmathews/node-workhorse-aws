@@ -1,6 +1,6 @@
 {
   "name": "node-workhorse-aws",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Extensions for workhorse to interact with Amazon Web Services.",
   "dependencies": {
     "aws-sdk": "^2.2.36",
