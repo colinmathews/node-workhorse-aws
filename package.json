@@ -11,6 +11,7 @@
     "source-map-support": "^0.4.0"
   },
   "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "devDependencies": {
     "chai": "^3.5.0",
     "deploy-lambda": "^1.2.0",
@@ -32,8 +33,8 @@
     "pretest": "npm run build",
     "test": "mocha",
     "typings": "typings",
-    "lint": "tslint lib/**/*.ts test/**.*.ts index.ts",
-    "lint:q": "tslint --force lib/**/*.ts test/**.*.ts index.ts",
+    "lint": "tslint lib/**/*.ts test/**/*.ts index.ts",
+    "lint:q": "tslint --force lib/**/*.ts test/**/*.ts index.ts",
     "lambda": "uncommitted && deploy-lambda deploy -c deploy-lambda.json",
     "lambda-permissions": "deploy-lambda permissions -c deploy-lambda.json"
   },
