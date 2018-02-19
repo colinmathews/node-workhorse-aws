@@ -10,13 +10,6 @@ export default class S3StateManager implements IStateManager {
   private static nextID: string;
   workhorse: Workhorse;
 
-  constructor(public config: AWSConfig) {
-    awsConfig.update({
-      credentials: new Credentials(config.accessKeyId, config.secretAccessKey),
-      region: config.region
-    });
-  }
-
   private static translateNumericIDIntoID(id: number): string {
     let now = new Date();
     return (now as any).format('YYYY-MM-DD-') + id.toString();
@@ -49,6 +42,13 @@ export default class S3StateManager implements IStateManager {
       }
     }
     return S3StateManager.translateNumericIDIntoID(S3StateManager.nextNumericID);
+  }
+
+  constructor(public config: AWSConfig) {
+    awsConfig.update({
+      credentials: new Credentials(config.accessKeyId, config.secretAccessKey),
+      region: config.region
+    });
   }
 
   save (work: Work): Promise<any> {

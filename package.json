@@ -3,10 +3,10 @@
   "version": "1.0.1",
   "description": "Extensions for workhorse to interact with Amazon Web Services.",
   "dependencies": {
-    "aws-sdk": "^2.2.36",
+    "aws-sdk": "2.2.36",
     "es6-promise": "^3.1.2",
     "node-uuid": "^1.4.7",
-    "node-workhorse": "1.1.0",
+    "node-workhorse": "1.1.8",
     "s3-append": "^1.1.0",
     "source-map-support": "^0.4.0"
   },

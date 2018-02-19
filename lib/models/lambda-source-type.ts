@@ -3,4 +3,4 @@ enum LambdaSourceType {
   APIGateway = 2
 }
 
-export default LambdaSourceType
+export default LambdaSourceType;
